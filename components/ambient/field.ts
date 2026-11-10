@@ -4,14 +4,11 @@ import type { PointerInput } from "@/components/ascii/engine/scene";
 
 /** Mostly '#', salted with the rest of the printable set. */
 const GLYPHS = "#####$%&*+=-:;~<>(){}[]|/\\@8BX0S?!^";
-/** Denser glyphs around the pointer and where a ripple passes. */
+/** Denser glyphs around the pointer. */
 const HOT = "@#%&8B$";
 const CELL_ASPECT = 2; // row height / column width
 /** Radius (columns) of the soft swell that follows the pointer. */
 export const SWELL_RADIUS = 26;
-/** Ripple speed (columns per second) and lifetime (seconds). */
-const RIPPLE_SPEED = 46;
-export const RIPPLE_LIFE = 1.8;
 
 function hash(x: number, y: number): number {
   let h = Math.imul(x, 374761393) + Math.imul(y, 668265263);
@@ -38,15 +35,6 @@ const smooth = (e0: number, e1: number, v: number) => {
   return k * k * (3 - 2 * k);
 };
 
-export interface Ripple {
-  x: number;
-  y: number;
-  /** Seconds since it started. */
-  age: number;
-  /** 0..1 strength. */
-  power: number;
-}
-
 export interface FieldOptions {
   /** Overall brightness 0..1. */
   intensity: number;
@@ -59,7 +47,6 @@ export interface FieldOptions {
    * field fades out behind words. Null means no text anywhere.
    */
   quiet?: Float32Array | null;
-  ripples?: readonly Ripple[];
 }
 
 /**
@@ -67,7 +54,7 @@ export interface FieldOptions {
  * brightness comes from large, domain-warped noise so it blends smoothly
  * from near-black into soft clouds whose hue drifts through the spectrum.
  * The pointer gently swells the field around it (`fade` eases that in and
- * out), ripples run outward through it, and it hushes behind text.
+ * out), and it hushes behind text.
  */
 export function drawField(
   grid: AsciiGrid,
@@ -78,7 +65,6 @@ export function drawField(
 ): void {
   const { cols, rows } = grid;
   const quiet = options.quiet ?? null;
-  const ripples = options.ripples ?? [];
   const flicker = Math.floor(t * 0.7);
   const swell2 = SWELL_RADIUS * SWELL_RADIUS;
   for (let y = 0; y < rows; y += 1) {
@@ -116,19 +102,6 @@ export function drawField(
         }
       }
 
-      for (const r of ripples) {
-        const dx = x - r.x;
-        const dy = (y - r.y) * CELL_ASPECT;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        const band = Math.abs(d - r.age * RIPPLE_SPEED);
-        if (band < 4) {
-          const k = (1 - band / 4) * (1 - r.age / RIPPLE_LIFE) * r.power;
-          level += k * 0.55;
-          hue += k * 0.3;
-          hot = Math.max(hot, k);
-        }
-      }
-
       if (options.floor) {
         // Light pooling up from the bottom, brightest under the footer.
         const rise = smooth(0.35, 1, y / rows) * options.floor;
@@ -152,12 +125,6 @@ export function drawField(
       grid.set(x, y, char, spectrum(Math.min(1, Math.max(0, hue)), shade));
     }
   }
-}
-
-/** Advances ripples by dt seconds and drops finished ones. */
-export function ageRipples(ripples: Ripple[], dt: number): Ripple[] {
-  for (const r of ripples) r.age += dt;
-  return ripples.filter((r) => r.age < RIPPLE_LIFE);
 }
 
 /**

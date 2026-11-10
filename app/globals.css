@@ -1384,8 +1384,8 @@ section[id] {
 .site-header {
   border-bottom-color: transparent;
   background: color-mix(in srgb, var(--bg) 78%, transparent);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
 }
 
 .site-header::after {
@@ -1608,8 +1608,8 @@ main h2 {
   /* % resolves against the body content box, so add back its 16px gutter. */
   padding-inline: max(16px, calc((100% - 72rem) / 2 + 16px));
   background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
 }
 
 /* Glass ------------------------------------------------------------------ */
@@ -1620,9 +1620,9 @@ main h2 {
 .terminal,
 .lab-section,
 .spot {
-  background: color-mix(in srgb, var(--surface) 58%, transparent);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background: color-mix(in srgb, var(--surface) 52%, transparent);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
   box-shadow:
     var(--shadow-panel),
     inset 0 1px 0 rgb(255 255 255 / 0.07),

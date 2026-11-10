@@ -62,7 +62,7 @@ describe("ambient field", () => {
     );
   });
 
-  it("fades out behind text and ripples brighten a ring", () => {
+  it("fades out behind text", () => {
     const p = { x: 0, y: 0, active: false };
     const quiet = quietMask(120, 40, [{ x: 40, y: 15, w: 40, h: 4 }]);
     expect(quiet[17 * 120 + 60]).toBeLessThan(0.2);
@@ -73,20 +73,6 @@ describe("ambient field", () => {
     drawField(hushed, 5, p, 0, { intensity: 1, scroll: 0, quiet });
     expect(brightness(hushed, 60, 17, 8)).toBeLessThan(
       brightness(loud, 60, 17, 8),
-    );
-
-    const calm = new AsciiGrid(120, 40);
-    const wave = new AsciiGrid(120, 40);
-    // Dimmed, so the ring has headroom to brighten.
-    drawField(calm, 5, p, 0, { intensity: 0.4, scroll: 0 });
-    drawField(wave, 5, p, 0, {
-      intensity: 0.4,
-      scroll: 0,
-      ripples: [{ x: 60, y: 20, age: 0.3, power: 1 }],
-    });
-    // The ring sits about 0.3 s × speed columns out.
-    expect(brightness(wave, 60 + 14, 20, 3)).toBeGreaterThan(
-      brightness(calm, 60 + 14, 20, 3),
     );
   });
 });

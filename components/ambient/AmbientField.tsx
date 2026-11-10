@@ -5,7 +5,7 @@ import { AsciiGrid } from "@/components/ascii/engine/grid";
 import { CanvasRenderer } from "@/components/ascii/engine/renderer";
 import { scheduler } from "@/components/ascii/engine/scheduler";
 import type { PointerInput } from "@/components/ascii/engine/scene";
-import { ageRipples, drawField, quietMask, type Ripple } from "./field";
+import { drawField, quietMask } from "./field";
 
 // Target cell size in CSS px (the font follows from it).
 const CELL_W = 7;
@@ -21,7 +21,6 @@ const QUIET = [
   ".site-footer a",
   ".site-footer > span",
 ].join(", ");
-const MAX_RIPPLES = 6;
 
 /** The tight box of an element's text (block elements span full width). */
 function textBox(el: Element): DOMRect {
@@ -36,7 +35,7 @@ function textBox(el: Element): DOMRect {
  * Full-viewport ASCII backdrop behind the page. Fixed and non-interactive
  * (pointer-events: none); opaque panels sit above it and it fades out
  * behind loose text. It reads the pointer from the window: the field is
- * revealed softly around it, and clicking empty space sends a ripple.
+ * revealed softly around it.
  */
 export default function AmbientField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,7 +47,6 @@ export default function AmbientField() {
     let renderer: CanvasRenderer | null = null;
     let grid: AsciiGrid | null = null;
     let fade = 0;
-    let ripples: Ripple[] = [];
     type Box = { x: number; y: number; w: number; h: number; fixed?: boolean };
     let pageBoxes: Box[] = [];
     let doc = 0;
@@ -76,10 +74,6 @@ export default function AmbientField() {
       x: clientX / CELL_W,
       y: clientY / CELL_H,
     });
-    const addRipple = (x: number, y: number, power: number) => {
-      ripples.push({ x, y, age: 0, power });
-      if (ripples.length > MAX_RIPPLES) ripples.shift();
-    };
 
     let resizeTimer = 0;
     const onResize = () => {
@@ -93,12 +87,6 @@ export default function AmbientField() {
       target.y = c.y;
       target.active = true;
     };
-    const onDown = (event: PointerEvent) => {
-      const el = event.target as Element | null;
-      if (el?.closest("a, button, input, textarea, select, .spot")) return;
-      const c = toCells(event.clientX, event.clientY);
-      addRipple(c.x, c.y, 1);
-    };
     const onLeave = () => {
       target.active = false;
     };
@@ -106,7 +94,6 @@ export default function AmbientField() {
     void build();
     window.addEventListener("resize", onResize);
     window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerdown", onDown, { passive: true });
     document.documentElement.addEventListener("pointerleave", onLeave);
 
     const handle = scheduler.register({
@@ -118,7 +105,6 @@ export default function AmbientField() {
         pointer.x += (target.x - pointer.x) * (pointer.active ? k : 1);
         pointer.y += (target.y - pointer.y) * (pointer.active ? k : 1);
         pointer.active = target.active;
-        ripples = ageRipples(ripples, dtMs / 1000);
 
         // Islands mount late, so rescan the text now and then. Boxes are
         // kept in page coordinates, so frames never read layout (no forced
@@ -177,7 +163,6 @@ export default function AmbientField() {
           scroll: y / CELL_H,
           quiet: quietMask(grid.cols, grid.rows, boxes),
           floor: bottom,
-          ripples,
         });
         renderer.render();
       },
@@ -190,7 +175,6 @@ export default function AmbientField() {
       window.clearTimeout(resizeTimer);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerdown", onDown);
       document.documentElement.removeEventListener("pointerleave", onLeave);
     };
   }, []);
