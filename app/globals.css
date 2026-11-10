@@ -2060,3 +2060,17 @@ body {
     overflow-x: visible;
   }
 }
+
+/* While scrolling, glass panels trade the live blur for a denser tint
+   (lib/motion/effects.ts sets data-scrolling); the blur returns when
+   scrolling settles. Re-blurring every moving panel each frame is what
+   made scrolling stutter. The header keeps its blur. */
+[data-scrolling] :is(.terminal, .lab-section, .spot, .map-stop, .lab-badge),
+[data-scrolling] #contact li,
+[data-scrolling] .site-footer::before {
+  backdrop-filter: none;
+}
+
+[data-scrolling] :is(.terminal, .lab-section, .spot) {
+  background-color: color-mix(in srgb, var(--surface) 88%, transparent);
+}

@@ -39,6 +39,11 @@ export class CanvasRenderer {
   private unsubscribeTheme: (() => void) | null = null;
   private dprMedia: MediaQueryList | null = null;
   private destroyed = false;
+  // What is actually on the canvas, per cell. Scenes often clear and
+  // rebuild the whole grid each frame, which marks every cell dirty even
+  // when nothing changed; comparing against this skips those redraws.
+  private drawnChars: Uint16Array;
+  private drawnColors: Uint8Array;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -47,6 +52,8 @@ export class CanvasRenderer {
   ) {
     this.canvas = canvas;
     this.grid = grid;
+    this.drawnChars = new Uint16Array(grid.cols * grid.rows).fill(0xffff);
+    this.drawnColors = new Uint8Array(grid.cols * grid.rows);
     this.fontFamily = options.fontFamily;
     this.maxDpr = options.maxDpr ?? 2;
     this.transparent = options.transparent ?? false;
@@ -106,7 +113,14 @@ export class CanvasRenderer {
     }
     const { chars, colors } = this.grid;
 
+    const drawnChars = this.drawnChars;
+    const drawnColors = this.drawnColors;
+    let drawn = 0;
     this.grid.forEachDirty((x, y, i) => {
+      if (drawnChars[i] === chars[i] && drawnColors[i] === colors[i]) return;
+      drawnChars[i] = chars[i]!;
+      drawnColors[i] = colors[i]!;
+      drawn += 1;
       const [dx, dw] = cellSpan(x, layout.cellWidth);
       const [dy, dh] = cellSpan(y, layout.cellHeight);
       if (this.transparent) {
@@ -137,7 +151,7 @@ export class CanvasRenderer {
       }
     });
 
-    this.stats.cellsDrawn += this.grid.dirtyCount;
+    this.stats.cellsDrawn += drawn;
     this.grid.clearDirty();
     this.stats.frames += 1;
     this.stats.lastFrameMs = performance.now() - start;
@@ -187,6 +201,7 @@ export class CanvasRenderer {
   }
 
   private fullRedraw(): void {
+    this.drawnChars.fill(0xffff);
     if (this.ctx && this.palette) {
       if (this.transparent) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
