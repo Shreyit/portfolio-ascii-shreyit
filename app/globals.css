@@ -1633,3 +1633,31 @@ main h2 {
     background: var(--surface);
   }
 }
+
+/* Full-bleed decorations may reach the viewport edge; never scroll sideways.
+   `clip` (unlike hidden) creates no scroll container, so sticky still works. */
+body {
+  overflow-x: clip;
+}
+
+/* Footer: the field fades into a frosted band. The blur layer is masked
+   with a gradient, so the blur ramps in gradually with no top edge. */
+.site-footer {
+  position: relative;
+  border-top-color: transparent;
+}
+
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: -6rem calc(50% - 50vw) 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--bg) 75%, transparent) 55%
+  );
+  backdrop-filter: blur(14px);
+  mask-image: linear-gradient(to bottom, transparent, #000 60%);
+  pointer-events: none;
+}
