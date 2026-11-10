@@ -10,6 +10,8 @@ interface LabPanelProps {
   command: string;
   intro: ReactNode;
   children: ReactNode;
+  /** Optional links shown at the right of the title bar. */
+  actions?: ReactNode;
 }
 
 export function LabPanel({
@@ -18,17 +20,21 @@ export function LabPanel({
   command,
   intro,
   children,
+  actions,
 }: LabPanelProps) {
   return (
     <section
       className={`lab-section spot ${styles.panel}`}
       aria-labelledby={id}
     >
-      <div className={styles.bar} aria-hidden="true">
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.command}>{command}</span>
+      <div className={styles.bar}>
+        <span className={styles.dot} aria-hidden="true" />
+        <span className={styles.dot} aria-hidden="true" />
+        <span className={styles.dot} aria-hidden="true" />
+        <span className={styles.command} aria-hidden="true">
+          {command}
+        </span>
+        {actions}
       </div>
       <div className={styles.body}>
         <h2 id={id}>{title}</h2>

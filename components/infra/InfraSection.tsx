@@ -1,4 +1,6 @@
+import { formatPeriod } from "@/components/ActivityList";
 import { LabPanel } from "@/components/LabPanel";
+import { experience } from "@/content";
 import { InfraIsland } from "./InfraIsland";
 import { InfraPanel } from "./InfraPanel";
 import { infraText } from "./scene";
@@ -14,19 +16,34 @@ const ID = "infra";
 
 export function InfraSection() {
   const s = createSim(120);
+  const job = experience.find((e) => e.experience === "infra");
   return (
     <LabPanel
       id={`${ID}-heading`}
       title="Infrastructure simulator"
       command="~/labs/aws-sim"
       intro={
-        <p className="lab-intro">
-          The pattern behind my internship backend: FastAPI on EC2 in an Auto
-          Scaling group behind a load balancer, static assets on S3 and
-          CloudFront, rolling releases. Push traffic, crash a server, ship a new
-          version. This is a teaching simulation, so the numbers are
-          illustrative, not production metrics.
-        </p>
+        <>
+          {job ? (
+            <p className="lab-callout">
+              <span className="lab-callout-tag">internship</span>
+              <span className="lab-callout-role">
+                {job.role}, {job.organisation}
+              </span>
+              <span className="lab-callout-meta">
+                {job.location ? `${job.location} · ` : ""}
+                {formatPeriod(job.period)}
+              </span>
+            </p>
+          ) : null}
+          <p className="lab-intro">
+            The pattern behind my internship backend: FastAPI on EC2 in an Auto
+            Scaling group behind a load balancer, static assets on S3 and
+            CloudFront, rolling releases. Push traffic, crash a server, ship a
+            new version. This is a teaching simulation, so the numbers are
+            illustrative, not production metrics.
+          </p>
+        </>
       }
     >
       <InfraIsland idBase={ID}>

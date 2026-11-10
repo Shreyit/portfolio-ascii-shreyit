@@ -1,12 +1,24 @@
+import { GithubIcon } from "@/components/GithubIcon";
 import { LabPanel } from "@/components/LabPanel";
+import { projects } from "@/content";
 import { MlIsland } from "./MlIsland";
 import { INITIAL_ML_STATE, MlView } from "./MlView";
 
 const ID = "ml";
 
 export function MlSection() {
+  const repo = projects.find((p) => p.slug === "rinn-microcredit-risk")?.links
+    .repo;
   return (
     <LabPanel
+      actions={
+        repo ? (
+          <a className="lab-action" href={repo}>
+            <GithubIcon />
+            view repo
+          </a>
+        ) : null
+      }
       id={`${ID}-heading`}
       title="ML laboratory"
       command="~/labs/rinn.ipynb"
