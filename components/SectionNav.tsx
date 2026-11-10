@@ -6,6 +6,7 @@ const SECTIONS = [
   { id: "ml-heading", label: "ml" },
   { id: "infra-heading", label: "infra" },
   { id: "projects-heading", label: "projects" },
+  { id: "contact", label: "contact" },
 ] as const;
 
 export function SectionNav() {

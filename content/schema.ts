@@ -42,6 +42,7 @@ export const profileSchema = z.object({
     github: httpsUrl,
     linkedin: httpsUrl.nullable(),
     email: z.string().email().nullable(),
+    collegeEmail: z.string().email().nullable(),
   }),
   needsReview: z.boolean(),
 });

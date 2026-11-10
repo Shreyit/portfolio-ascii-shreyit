@@ -664,7 +664,7 @@ export const COMMANDS: Command[] = [
     usage: "contact",
     summary: "how to reach me",
     run(_args, { data }) {
-      const { github, linkedin, email } = data.profile.links;
+      const { github, linkedin, email, collegeEmail } = data.profile.links;
       const row = (k: string, v: string | null, href?: string): Line => [
         seg(pad(k, 10), "muted"),
         v
@@ -677,6 +677,11 @@ export const COMMANDS: Command[] = [
         row("github", github, github),
         row("linkedin", linkedin, linkedin ?? undefined),
         row("email", email, email ? `mailto:${email}` : undefined),
+        row(
+          "college",
+          collegeEmail,
+          collegeEmail ? `mailto:${collegeEmail}` : undefined,
+        ),
       );
     },
   },

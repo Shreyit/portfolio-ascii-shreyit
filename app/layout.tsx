@@ -3,6 +3,7 @@ import { JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SectionNav } from "@/components/SectionNav";
+import { ContactLinks } from "@/components/ContactLinks";
 import styles from "@/components/SectionNav.module.css";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -62,7 +63,8 @@ export default function RootLayout({
           <main id="main" className="site-main">
             {children}
           </main>
-          <footer className="site-footer">
+          <footer className="site-footer site-footer--stacked">
+            <ContactLinks />
             <span>&copy; Shreyit Sinha</span>
           </footer>
         </MotionProvider>

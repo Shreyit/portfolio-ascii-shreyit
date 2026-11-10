@@ -1121,3 +1121,16 @@ samp {
   border: 0;
   cursor: crosshair;
 }
+
+/* In-page jumps land below the sticky header (taller when it wraps on
+   narrow screens), not underneath it. */
+h2[id],
+section[id] {
+  scroll-margin-top: 8rem;
+}
+
+.site-footer--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}

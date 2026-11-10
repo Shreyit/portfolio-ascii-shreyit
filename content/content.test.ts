@@ -53,11 +53,10 @@ describe("content layer", () => {
     }
   });
 
-  it("contains no private contact details or private repo names", () => {
+  it("contains no phone number or private repo names", () => {
     // Built by concatenation so this test file itself does not contain them.
     const banned = [
       "77598" + "11300",
-      "stud.tiss" + ".ac.in",
       "chromolaena-invasion" + "-frontier",
       "nainital_tourism_" + "reearch",
       "nyc-taxi" + "-ml",

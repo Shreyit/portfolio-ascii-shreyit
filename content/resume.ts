@@ -20,10 +20,13 @@ export const profile: Profile = {
   headline: null,
   links: {
     github: "https://github.com/Shreyit",
-    // Contact details are a later user decision; intentionally unset.
-    linkedin: null,
-    email: null,
+    // Contact details provided by Shreyit (2026-11-10). The phone number
+    // stays off the site.
+    linkedin: "https://www.linkedin.com/in/shreyit-sinha",
+    email: "sinhashreyit@gmail.com",
+    collegeEmail: "m2024bsass027@stud.tiss.ac.in",
   },
+  // Headline and location are still unwritten.
   needsReview: true,
 };
 

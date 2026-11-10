@@ -203,3 +203,18 @@ describe("lab commands", () => {
     expect(hrefs("explore")).toContain("#research-heading");
   });
 });
+
+describe("contact", () => {
+  it("lists every published contact link", () => {
+    const lines = runCommand("contact", { data, history: [] }).lines;
+    const hrefs = lines.flatMap((l) =>
+      l.filter((s) => s.href).map((s) => s.href),
+    );
+    expect(hrefs).toEqual([
+      "https://github.com/Shreyit",
+      "https://www.linkedin.com/in/shreyit-sinha",
+      "mailto:sinhashreyit@gmail.com",
+      "mailto:m2024bsass027@stud.tiss.ac.in",
+    ]);
+  });
+});
