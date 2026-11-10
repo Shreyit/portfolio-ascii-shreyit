@@ -2047,3 +2047,16 @@ body {
     transition: opacity 0.2s;
   }
 }
+
+/* Wider screens: logo | links | balancing column, so the section links sit
+   on the page's true centre line rather than after the logo. */
+@media (min-width: 40.0625rem) {
+  .site-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .site-header nav {
+    overflow-x: visible;
+  }
+}

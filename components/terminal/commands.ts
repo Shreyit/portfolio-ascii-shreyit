@@ -400,7 +400,11 @@ export const COMMANDS: Command[] = [
         blank,
         kv("user", data.profile.name),
         kv("degree", data.profile.degree),
-        kv("school", data.profile.institution),
+        kv(
+          "school",
+          data.education[0]?.institution ?? data.profile.institution,
+        ),
+        kv("college", data.profile.institution),
         kv("focus", Object.values(PILLAR_LABELS).join(" · ")),
         kv("projects", String(data.projects.length)),
         kv("fieldwork", String(data.research.length)),
