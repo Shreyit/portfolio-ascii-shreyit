@@ -1293,6 +1293,8 @@ button:disabled {
 .portrait-wrap {
   width: min(100%, 21rem);
   justify-self: center;
+  /* The bottom dissolves into the page instead of ending on a hard line. */
+  mask-image: linear-gradient(to bottom, #000 62%, transparent 98%);
 }
 
 .portrait-art {
