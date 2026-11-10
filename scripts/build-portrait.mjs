@@ -2,7 +2,8 @@
 // Imports a braille ASCII portrait (as exported by an image-to-ASCII
 // converter, ANSI colours allowed) into content/generated/portrait.json,
 // trimming blank margins. The source photo is never committed.
-//   node scripts/build-portrait.mjs ~/Downloads/ascii-art.txt
+//   node scripts/build-portrait.mjs ~/Downloads/ascii-art.txt [keep=0.8]
+// `keep` is the share of rows kept from the top (crops the bottom).
 import { readFileSync, writeFileSync } from "node:fs";
 
 const BLANK = "⠀";
@@ -28,9 +29,15 @@ for (const r of lines) {
       break;
     }
 }
-const out = lines.map((r) => r.slice(left, right + 1).join(""));
+const keep = Number(process.argv[3] ?? 1);
+const kept = lines.slice(0, Math.round(lines.length * keep));
+const out = kept.map((r) => r.slice(left, right + 1).join(""));
 writeFileSync(
   "content/generated/portrait.json",
-  JSON.stringify({ cols: right - left + 1, rows: out.length, lines: out }, null, 1) + "\n",
+  JSON.stringify(
+    { cols: right - left + 1, rows: out.length, lines: out },
+    null,
+    1,
+  ) + "\n",
 );
 console.log(`portrait: ${right - left + 1}x${out.length}`);

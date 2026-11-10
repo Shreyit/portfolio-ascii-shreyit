@@ -1272,7 +1272,12 @@ button:disabled {
 
 @media (min-width: 56rem) {
   .hero-top {
-    grid-template-columns: minmax(0, 1fr) clamp(15rem, 26vw, 21rem);
+    /* Portrait on the left, name and tagline on the right. */
+    grid-template-columns: clamp(15rem, 26vw, 21rem) minmax(0, 1fr);
+  }
+
+  .hero-top > .portrait-wrap {
+    order: -1;
   }
 }
 

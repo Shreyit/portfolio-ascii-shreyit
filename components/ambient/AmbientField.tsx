@@ -62,7 +62,10 @@ export default function AmbientField() {
       const c = toCells(event.clientX, event.clientY);
       target.x = c.x;
       target.y = c.y;
-      target.active = true;
+      // No glow behind the focal art: it would light up through it.
+      target.active = !(event.target as Element | null)?.closest?.(
+        ".hero-art, .portrait-art",
+      );
     };
     const onLeave = () => {
       target.active = false;

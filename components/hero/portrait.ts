@@ -124,7 +124,7 @@ export function createPortraitScene(
           const d2 = dx * dx + dy * dy;
           if (d2 < RADIUS * RADIUS && d2 > 0.0001) {
             const d = Math.sqrt(d2);
-            const push = ((RADIUS - d) / RADIUS) * 120;
+            const push = ((RADIUS - d) / RADIUS) * 70;
             p.vx += (dx / d) * push * dt;
             p.vy += ((dy / d) * push * dt) / CELL_ASPECT;
           }
