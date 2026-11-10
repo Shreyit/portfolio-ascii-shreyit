@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   allProjects,
+  stackFromLanguages,
   allResearch,
   allExperience,
   certifications,
@@ -180,6 +181,60 @@ describe("content layer", () => {
     }
     const researchPillars = new Set(research.flatMap((r) => r.pillar));
     expect(researchPillars.has("research")).toBe(true);
+  });
+});
+
+describe("stackFromLanguages", () => {
+  it("drops build/config languages even when they are large", () => {
+    expect(
+      stackFromLanguages({
+        Python: 800,
+        Dockerfile: 200,
+        Makefile: 100,
+        AppleScript: 100,
+        Procfile: 50,
+        Shell: 50,
+        PowerShell: 50,
+        Batchfile: 50,
+      }),
+    ).toEqual(["Python"]);
+  });
+
+  it("applies the 10% threshold against the total bytes (including dropped languages)", () => {
+    expect(
+      stackFromLanguages({
+        Python: 60,
+        Dockerfile: 40,
+        CSS: 4, // 4% of 104 total -> dropped
+        JavaScript: 10, // ~9.6% of 104 -> dropped
+      }),
+    ).toEqual(["Python"]);
+    expect(
+      stackFromLanguages({ TypeScript: 50, Go: 30, Other: 8 }), // 8/88 = 9.1% -> dropped
+    ).toEqual(["TypeScript", "Go"]);
+  });
+
+  it("orders by bytes descending", () => {
+    expect(stackFromLanguages({ CSS: 10, Python: 70, HTML: 20 })).toEqual([
+      "Python",
+      "HTML",
+      "CSS",
+    ]);
+  });
+
+  it("handles empty input and all-zero bytes", () => {
+    expect(stackFromLanguages({})).toEqual([]);
+    expect(stackFromLanguages({ Python: 0 })).toEqual([]);
+    expect(stackFromLanguages({ Dockerfile: 100 })).toEqual([]);
+  });
+});
+
+describe("public project stacks", () => {
+  it("no public project's stack contains build/config languages", () => {
+    for (const project of projects) {
+      expect(project.stack).not.toContain("AppleScript");
+      expect(project.stack).not.toContain("Dockerfile");
+    }
   });
 });
 

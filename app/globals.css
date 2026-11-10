@@ -406,3 +406,238 @@ body {
 .t-cmd:hover {
   text-decoration-style: solid;
 }
+
+/* Plain sections below the terminal ---------------------------------- */
+.content-section {
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border);
+}
+
+.content-section a,
+.content-section a:visited {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+.content-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.content-section li {
+  position: relative;
+  padding-left: var(--space-6);
+  overflow-wrap: anywhere;
+}
+
+.content-section li::before {
+  content: "›";
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+
+/* Terminal bullets hang the dash out of the wrapped text ------------- */
+.terminal-line--bullet {
+  padding-left: 4ch;
+  text-indent: -4ch;
+}
+
+/* Lab sections ----------------------------------------------------------- */
+
+.lab-section .lab-intro {
+  max-width: 68ch;
+  color: var(--muted);
+  margin-block: var(--space-2) var(--space-6);
+}
+
+/* SQL playground --------------------------------------------------------- */
+
+.sql {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 64rem) {
+  .sql {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+  }
+}
+
+.sql-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sql-table-item::before {
+  content: none;
+}
+
+.sql-table {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.sql-table pre {
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.25;
+}
+
+.sql-table:disabled {
+  cursor: default;
+}
+
+.sql-table[data-related="true"] {
+  color: var(--fg);
+}
+
+.sql-table[data-active="true"],
+.sql-table:not(:disabled):hover,
+.sql-table:focus-visible {
+  color: var(--accent);
+}
+
+.sql-table-desc {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.sql-console {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.sql-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.sql-chip,
+.sql-run,
+.sql-reset {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.sql-chip[aria-pressed="true"],
+.sql-chip:not(:disabled):hover,
+.sql-run:not(:disabled):hover,
+.sql-reset:not(:disabled):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sql-run {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.sql-editor {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  resize: vertical;
+  tab-size: 2;
+}
+
+.sql-editor:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+.sql-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sql-status {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.sql-error {
+  margin: 0;
+  color: var(--error);
+  font-size: var(--text-sm);
+}
+
+.sql-result {
+  max-height: 24rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.sql-result pre {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: var(--text-xs);
+  /* Tight enough that box-drawing verticals join up between rows. */
+  line-height: 1.25;
+}
+
+/* On narrow screens the schema becomes a swipeable row of tables. */
+@media (max-width: 40rem) {
+  .sql-tables {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: minmax(16rem, 85%);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-bottom: var(--space-2);
+  }
+
+  .sql-table-item {
+    scroll-snap-align: start;
+  }
+}
+
+/* Browsers default <pre>/<code> to their own monospace; use ours. */
+pre,
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}

@@ -77,6 +77,39 @@ IntersectionObserver (rootMargin `100px`) and resume when visible. Setting
 a 160x60 plasma-field instance inside `.ascii-scroll` with `data-lenis-prevent`, a tall
 spacer, and a second 40x12 instance below the fold for off-screen behavior.
 
+## Terminal
+
+`components/terminal/` is an interactive, keyboard-driven terminal that reads the
+same public (reviewed) content as the rest of the site — nothing more is serialised
+to the client than `TerminalData` (full content minus `needsReview` entries).
+
+- `types.ts` — `Segment` (text + tone/href/cmd), `Line`, `Tone`, and `TerminalData`
+  (profile, education, experience, projects, research, skills, extracurriculars,
+  certifications). Commands receive a `CommandContext` (data, history, theme accessors).
+- `parser.ts` — `tokenize()`: whitespace splitting with single/double quotes
+  (an unterminated quote runs to end of line).
+- `commands.ts` — pure command handlers over the data snapshot (no I/O). Visible
+  commands (`COMMANDS`): `help`, `whoami`, `neofetch`, `ls`, `cat`, `open`, `skills`,
+  `stack`, `grep`, `experience`, `fieldwork`, `sql`, `ml`, `infra`, `explore`,
+  `contact`, `theme`, `history`, `clear` (alias `cls`). Hidden easter eggs: `echo`,
+  `sudo`, `vim`, `:q`, `rm`. Also `runCommand`, `complete` (tab completion) and
+  `formatPeriod`.
+- `commands.test.ts` — vitest coverage: tokenizer, `formatPeriod`, `help` output,
+  `ls`/`cat`/`grep`/`stack` resolution (including ambiguity), theme accessors, tab
+  completion, and privacy: command output is scanned to guarantee no unreviewed or
+  private repository names (`brsr_tool`, `cdp_analysis`, `DataCo-Market-Dashboard`,
+  `SDG-Streamlit-Interactive-Dashboard`, `my-neovim-ds-config`, SANKHYA paths) ever
+  appear, and `open` only exposes public links.
+- `Terminal.tsx` — client component. The opening transcript (server-rendered
+  `neofetch`) is shown before any JS loads; the command module
+  (`import("./commands")`) is dynamically imported on first interaction (hover,
+  focus or Tab) to keep it off the critical path. Features: tab completion with a
+  candidates line, command history (ArrowUp/ArrowDown), `/` focuses the prompt from
+  anywhere (unless you are already typing in an input), Ctrl+L clears, Ctrl+C
+  cancels the current line, `role="log"` + `aria-live="polite"`, max 200 entries,
+  auto-scrolls the log only (never the page). Lines whose first segment is the
+  bullet marker `"  - "` get `.terminal-line--bullet` (hanging indent).
+
 ## Testing
 
 Unit tests (Vitest, `pnpm test`) cover the content layer (zod parse, allowlist, privacy
@@ -124,6 +157,7 @@ are used; `permissions: contents: read`; concurrency cancels in-progress runs fo
 app/                  # App Router root: layout.tsx, page.tsx, globals.css
 components/           # UI components (HeroHeading, ThemeToggle) + unit tests
 components/ascii/     # ASCII engine (see above) + AsciiCanvas wrapper
+components/terminal/  # Interactive terminal (see above)
 content/              # Typed, validated content layer (see above)
 lib/motion/           # Central animation lifecycle:
   gsap-setup.ts       #   registers ScrollTrigger once (client only)

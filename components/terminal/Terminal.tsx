@@ -227,47 +227,55 @@ function Lines({
   lines: Line[];
   onRun: (command: string) => void;
 }) {
-  return lines.map((line, i) => (
-    <div key={i} className="terminal-line">
-      {line.length === 0
-        ? " "
-        : line.map((segment, j) => {
-            const className = segment.tone ? `t-${segment.tone}` : undefined;
-            if (segment.href) {
+  return lines.map((line, i) => {
+    const isBullet = line[0]?.text === "  - ";
+    return (
+      <div
+        key={i}
+        className={
+          isBullet ? "terminal-line terminal-line--bullet" : "terminal-line"
+        }
+      >
+        {line.length === 0
+          ? " "
+          : line.map((segment, j) => {
+              const className = segment.tone ? `t-${segment.tone}` : undefined;
+              if (segment.href) {
+                return (
+                  <a
+                    key={j}
+                    className="t-link"
+                    href={segment.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {segment.text}
+                  </a>
+                );
+              }
+              if (segment.cmd) {
+                const command = segment.cmd;
+                return (
+                  <button
+                    key={j}
+                    type="button"
+                    className="t-cmd"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onRun(command);
+                    }}
+                  >
+                    {segment.text}
+                  </button>
+                );
+              }
               return (
-                <a
-                  key={j}
-                  className="t-link"
-                  href={segment.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <span key={j} className={className}>
                   {segment.text}
-                </a>
+                </span>
               );
-            }
-            if (segment.cmd) {
-              const command = segment.cmd;
-              return (
-                <button
-                  key={j}
-                  type="button"
-                  className="t-cmd"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onRun(command);
-                  }}
-                >
-                  {segment.text}
-                </button>
-              );
-            }
-            return (
-              <span key={j} className={className}>
-                {segment.text}
-              </span>
-            );
-          })}
-    </div>
-  ));
+            })}
+      </div>
+    );
+  });
 }

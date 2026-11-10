@@ -80,6 +80,37 @@ export const githubRepos: GithubRepo[] = deepFreeze(
 
 const reposByName = new Map(githubRepos.map((repo) => [repo.name, repo]));
 
+const EXCLUDED_STACK_LANGUAGES = new Set(
+  [
+    "Dockerfile",
+    "Makefile",
+    "AppleScript",
+    "Batchfile",
+    "Procfile",
+    "Shell",
+    "PowerShell",
+  ].map((name) => name.toLowerCase()),
+);
+
+const STACK_LANGUAGE_THRESHOLD = 0.1;
+
+// GitHub languages backfill: significant languages only. Keeps entries with at
+// least 10% of the repo's bytes, drops build/config "languages", largest first.
+export function stackFromLanguages(
+  languages: Record<string, number>,
+): string[] {
+  const entries = Object.entries(languages).filter(([, bytes]) => bytes > 0);
+  const total = entries.reduce((sum, [, bytes]) => sum + bytes, 0);
+  if (total <= 0) {
+    return [];
+  }
+  return entries
+    .filter(([, bytes]) => bytes / total >= STACK_LANGUAGE_THRESHOLD)
+    .filter(([name]) => !EXCLUDED_STACK_LANGUAGES.has(name.toLowerCase()))
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name);
+}
+
 // Merge public GitHub metadata into projects, keyed by `github` (repo name).
 // Repos are validated against the allowlist here too — anything else is dropped loudly.
 export const allProjects: Project[] = deepFreeze(
@@ -99,7 +130,7 @@ export const allProjects: Project[] = deepFreeze(
       stack:
         parsed.stack.length > 0
           ? parsed.stack
-          : Object.keys(repo?.languages ?? {}),
+          : stackFromLanguages(repo?.languages ?? {}),
       links: {
         repo: parsed.links.repo ?? repo?.url ?? null,
         live: parsed.links.live ?? repo?.homepage ?? null,

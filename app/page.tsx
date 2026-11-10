@@ -1,4 +1,5 @@
 import { HeroHeading } from "@/components/HeroHeading";
+import { SqlSection } from "@/components/sql/SqlSection";
 import { Terminal } from "@/components/terminal/Terminal";
 import { runCommand } from "@/components/terminal/commands";
 import type { TerminalData } from "@/components/terminal/types";
@@ -58,7 +59,9 @@ export default function Home() {
 
       <Terminal data={terminalData} intro={intro} />
 
-      <section aria-labelledby="projects-heading">
+      <SqlSection data={terminalData} />
+
+      <section className="content-section" aria-labelledby="projects-heading">
         <h2 id="projects-heading">Projects</h2>
         {PILLARS.filter((pillar) => pillar !== "research").map((pillar) => {
           const pillarProjects = projectsByPillar(pillar);
@@ -90,7 +93,7 @@ export default function Home() {
         })}
       </section>
 
-      <section aria-labelledby="research-heading">
+      <section className="content-section" aria-labelledby="research-heading">
         <h2 id="research-heading">Research &amp; fieldwork</h2>
         <ul>
           {research.map((entry) => (
@@ -99,7 +102,7 @@ export default function Home() {
         </ul>
       </section>
 
-      <section aria-labelledby="activities-heading">
+      <section className="content-section" aria-labelledby="activities-heading">
         <h2 id="activities-heading">Leadership &amp; activities</h2>
         <ul>
           {extracurriculars.map((entry) => (
