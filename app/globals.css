@@ -1598,3 +1598,56 @@ main h2 {
   white-space: nowrap;
   padding-bottom: 0.08em;
 }
+
+/* Full-bleed header bar: spans the whole viewport (body has a 16px gutter),
+   content stays on the 72rem column. */
+.site-header {
+  width: calc(100% + 32px);
+  max-width: none;
+  margin-inline: -16px;
+  /* % resolves against the body content box, so add back its 16px gutter. */
+  padding-inline: max(16px, calc((100% - 72rem) / 2 + 16px));
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* Glass ------------------------------------------------------------------ */
+
+/* Panels, the terminal and cards are frosted glass over the field: a
+   translucent surface, a backdrop blur and a light top edge. */
+.glass,
+.terminal,
+.lab-section,
+.spot {
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    var(--shadow-panel),
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    inset 0 0 0 1px rgb(255 255 255 / 0.02);
+}
+
+.terminal {
+  border-color: color-mix(in srgb, var(--border) 70%, rgb(255 255 255 / 0.12));
+}
+
+/* Inner surfaces sit on the glass, so they go translucent too. */
+.terminal-bar,
+.sql-card,
+.sql-editor-wrap,
+.sql-result,
+.map-stop,
+.map-art {
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass,
+  .terminal,
+  .lab-section,
+  .spot {
+    background: var(--surface);
+  }
+}

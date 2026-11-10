@@ -49,9 +49,10 @@ export default function AmbientField() {
     let grid: AsciiGrid | null = null;
     let fade = 0;
     let ripples: Ripple[] = [];
-    let quietEls: Element[] = [];
-    // Re-queried on each scan: the hero swaps its static figure for a canvas.
-    let heroEl: Element | null = null;
+    type Box = { x: number; y: number; w: number; h: number; fixed?: boolean };
+    let pageBoxes: Box[] = [];
+    let doc = 0;
+    let heroBox: (Box & { floor: number; soft: number }) | null = null;
     let lastScan = -Infinity;
     const pointer: PointerInput = { x: 0, y: 0, active: false };
     const target: PointerInput = { x: 0, y: 0, active: false };
@@ -63,7 +64,8 @@ export default function AmbientField() {
       grid = new AsciiGrid(Math.ceil(w / CELL_W), Math.ceil(h / CELL_H));
       const next = new CanvasRenderer(canvas, grid, {
         fontFamily: getComputedStyle(canvas).fontFamily,
-        maxDpr: 1.5,
+        // Background texture: 1x is plenty and quarters the fill cost on retina.
+        maxDpr: 1,
       });
       renderer = next;
       await next.init(w, h);
@@ -118,42 +120,54 @@ export default function AmbientField() {
         pointer.active = target.active;
         ripples = ageRipples(ripples, dtMs / 1000);
 
-        // Islands mount late, so rescan the text elements now and then.
+        // Islands mount late, so rescan the text now and then. Boxes are
+        // kept in page coordinates, so frames never read layout (no forced
+        // reflow while Lenis scrolls); only the scroll offset changes.
+        const y = window.scrollY;
         if (timeMs - lastScan > 1500) {
           lastScan = timeMs;
-          heroEl = document.querySelector(".hero-art");
-          quietEls = [...document.querySelectorAll(QUIET)].filter(
+          doc = document.documentElement.scrollHeight;
+          const els = [...document.querySelectorAll(QUIET)].filter(
             (el) => !el.closest(".spot"),
           );
+          pageBoxes = [];
+          for (const el of els) {
+            const r = textBox(el);
+            if (!r.width) continue;
+            const fixed = el.matches(".site-header");
+            pageBoxes.push({
+              x: r.left / CELL_W,
+              y: (r.top + (fixed ? 0 : y)) / CELL_H,
+              w: r.width / CELL_W,
+              h: r.height / CELL_H,
+              fixed,
+            });
+          }
+          const hero = document
+            .querySelector(".hero-art")
+            ?.getBoundingClientRect();
+          heroBox = hero?.width
+            ? {
+                x: hero.left / CELL_W,
+                y: (hero.top + y) / CELL_H,
+                w: hero.width / CELL_W,
+                h: hero.height / CELL_H,
+                floor: 0.12,
+                soft: 2,
+              }
+            : null;
         }
         const vh = window.innerHeight;
+        const rowsScrolled = y / CELL_H;
+        const viewRows = vh / CELL_H;
         const boxes: Parameters<typeof quietMask>[2][number][] = [];
-        // A wide, soft oval hush behind the hero name (no hard box).
-        const hero = heroEl?.getBoundingClientRect();
-        if (hero && hero.bottom > 0) {
-          boxes.push({
-            x: hero.left / CELL_W,
-            y: hero.top / CELL_H,
-            w: hero.width / CELL_W,
-            h: hero.height / CELL_H,
-            floor: 0.12,
-            soft: 2,
-          });
-        }
-        for (const el of quietEls) {
-          const r = textBox(el);
-          if (r.bottom < 0 || r.top > vh || !r.width) continue;
-          boxes.push({
-            x: r.left / CELL_W,
-            y: r.top / CELL_H,
-            w: r.width / CELL_W,
-            h: r.height / CELL_H,
-          });
+        for (const b of [...pageBoxes, ...(heroBox ? [heroBox] : [])]) {
+          const top = "fixed" in b && b.fixed ? b.y : b.y - rowsScrolled;
+          if (top + b.h < -4 || top > viewRows + 4) continue;
+          boxes.push({ ...b, y: top });
         }
 
         // Strong at the top and at the very bottom, calmer in between.
-        const y = window.scrollY;
-        const doc = document.documentElement.scrollHeight;
         const top = Math.min(1, Math.max(0, y / vh - 0.2));
         const bottom = Math.min(1, Math.max(0, 1 - (doc - y - vh) / vh));
         const intensity = Math.max(1 - 0.45 * top, bottom);

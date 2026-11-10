@@ -19,7 +19,7 @@ export default function HeroCanvas() {
         scene={factory}
         cols={NAME_COLS}
         rows={NAME_ROWS}
-        fps={45}
+        fps={30}
         minFontPx={HERO_MIN_FONT_PX}
         label={HERO_LABEL}
         className="hero-art"
