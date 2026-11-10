@@ -1558,8 +1558,8 @@ main h2 {
   gap: var(--space-2);
 }
 
+/* Glass pills; all kinds share the accent, the label says the kind. */
 .map-stop {
-  --kind: var(--spectrum-2);
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: baseline;
@@ -1569,35 +1569,28 @@ main h2 {
   font: inherit;
   font-size: var(--text-sm);
   color: var(--fg);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--kind);
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--border) 70%, rgb(255 255 255 / 0.12));
+  border-radius: 999px;
+  padding: var(--space-2) var(--space-4);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(16px) saturate(150%);
   cursor: pointer;
   transition:
     border-color var(--duration-fast) var(--ease-out),
-    background var(--duration-fast) var(--ease-out);
-}
-
-.map-stop[data-kind="home"] {
-  --kind: var(--spectrum-5);
-}
-.map-stop[data-kind="study"] {
-  --kind: var(--spectrum-2);
-}
-.map-stop[data-kind="fieldwork"] {
-  --kind: var(--spectrum-4);
-}
-.map-stop[data-kind="work"] {
-  --kind: var(--spectrum-1);
+    background var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .map-stop:hover,
 .map-stop:focus-visible,
 .map-stop[aria-pressed="true"] {
-  border-color: var(--kind);
-  background: color-mix(in srgb, var(--kind) 12%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 0 18px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .map-stop:disabled {
@@ -1613,7 +1606,7 @@ main h2 {
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--kind);
+  color: var(--accent);
 }
 
 .map-card {
