@@ -45,14 +45,10 @@ export function portraitCells(): { x: number; y: number; ch: string }[] {
   return cells;
 }
 
-/**
- * Hue runs top (violet) to bottom (orchid); denser cells are brighter. A
- * gentle vertical ramp lifts the top (the face) and settles the bottom.
- */
+/** Hue runs top (violet) to bottom (orchid); denser cells are brighter. */
 function colourFor(p: Particle, glow: number): number {
-  const v = p.hy / PORTRAIT_ROWS;
-  const hue = 0.3 + v * 0.35;
-  const level = 0.72 + p.ink * 0.28 + (0.45 - v) * 0.4 + glow;
+  const hue = 0.3 + (p.hy / PORTRAIT_ROWS) * 0.35;
+  const level = 0.72 + p.ink * 0.28 + glow;
   return spectrum(Math.min(1, hue + glow * 0.4), Math.min(1, level));
 }
 
