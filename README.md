@@ -6,7 +6,7 @@ Personal portfolio of Shreyit Sinha — ASCII-inspired, built with Next.js (App 
 
 - **Next.js** (latest stable, App Router) + **React** + **TypeScript** (`strict` + `noUncheckedIndexedAccess`)
 - **GSAP** (`@gsap/react`, `gsap/ScrollTrigger`) for animation, **Lenis** for smooth scrolling
-- Plain CSS design tokens in `app/globals.css` (no Tailwind) — dark theme by default, light via `data-theme="light"` or `prefers-color-scheme`
+- Plain CSS design tokens in `app/globals.css` (no Tailwind) — dark-only design
 - **Vitest** + Testing Library for unit tests, **Playwright** for e2e
 - **ESLint** (flat config, `eslint-config-next` + `eslint-config-prettier`) and **Prettier**
 
@@ -57,8 +57,8 @@ ASCII experience on the site. It has no React imports (enforced by a purity test
 - `metrics.ts` — `measureFont(fontFamily)`: font metrics as ratios of the font size, measured once per family on a 100 px probe canvas (after `document.fonts.load`), cached. Measures tall EXTREME_GLYPHS (not just "M") so glyphs are never clipped.
 - `layout.ts` — `computeLayout(cssWidth, cssHeight, ...)`: fits a cols x rows grid exactly into a CSS box (cell size may be fractional; per-edge device-pixel snapping via `cellSpan`). Font size derives from the cell width, shrunk if the tallest glyph extents don't fit the cell height. `null` when the box is degenerate.
 - `glyph-atlas.ts` — pre-rendered (char, color) glyphs. Atlases are **shared and reference-counted** (`acquireAtlas`/`release`) — instances with the same font size, cell size and palette draw from one small surface that **grows on demand** up to 2048x2048. Falls back to plain `fillText` when full.
-- `palette.ts` — reads `--fg/--muted/--accent/--border/--bg` (index 0-3 = fg/muted/accent/border; bg used for clearing) plus `onThemeChange(cb)` (data-theme MutationObserver + `prefers-color-scheme`).
-- `renderer.ts` — `CanvasRenderer`: draws only dirty cells; a full redraw happens on resize, DPR change (uncapped `resolution: dppx` media query) and theme change. `stats` exposes `frames`, `cellsDrawn`, `lastFrameMs`. `destroy()` releases the atlas reference and observers.
+- `palette.ts` — reads `--fg/--muted/--accent/--border/--bg` (index 0-3 = fg/muted/accent/border; bg used for clearing) plus `onThemeChange(cb)` (kept; dark-only today).
+- `renderer.ts` — `CanvasRenderer`: draws only dirty cells; a full redraw happens on resize, DPR change (uncapped `resolution: dppx` media query). `stats` exposes `frames`, `cellsDrawn`, `lastFrameMs`. `destroy()` releases the atlas reference and observers.
 - `scheduler.ts` — the only ASCII animation loop, on the shared `gsap.ticker` from `lib/motion/gsap-setup.ts` (no second rAF loop). One ticker callback is added while ≥1 job is active and removed when the last is disposed. Per-job `fps` throttle (default 30), `dtMs` clamped to 100 ms, per-job error isolation (`console.error` at most once per job), `resume()` resets the clock, and everything pauses while `document.hidden`.
 - `scene.ts` — the scene contract: `init(grid)`, `update(grid, timeMs, dtMs)`, `staticFrame(grid)` (single representative frame; used for reduced motion and SSR).
 
@@ -85,17 +85,17 @@ to the client than `TerminalData` (full content minus `needsReview` entries).
 
 - `types.ts` — `Segment` (text + tone/href/cmd), `Line`, `Tone`, and `TerminalData`
   (profile, education, experience, projects, research, skills, extracurriculars,
-  certifications). Commands receive a `CommandContext` (data, history, theme accessors).
+  certifications). Commands receive a `CommandContext` (data, history).
 - `parser.ts` — `tokenize()`: whitespace splitting with single/double quotes
   (an unterminated quote runs to end of line).
 - `commands.ts` — pure command handlers over the data snapshot (no I/O). Visible
   commands (`COMMANDS`): `help`, `whoami`, `neofetch`, `ls`, `cat`, `open`, `skills`,
   `stack`, `grep`, `experience`, `fieldwork`, `sql`, `ml`, `infra`, `explore`,
-  `contact`, `theme`, `history`, `clear` (alias `cls`). Hidden easter eggs: `echo`,
+  `contact`, `history`, `clear` (alias `cls`). Hidden easter eggs: `sudo`,
   `sudo`, `vim`, `:q`, `rm`. Also `runCommand`, `complete` (tab completion) and
   `formatPeriod`.
 - `commands.test.ts` — vitest coverage: tokenizer, `formatPeriod`, `help` output,
-  `ls`/`cat`/`grep`/`stack` resolution (including ambiguity), theme accessors, tab
+  `ls`/`cat`/`grep`/`stack` resolution (including ambiguity), tab
   completion, and privacy: command output is scanned to guarantee no unreviewed or
   private repository names (`brsr_tool`, `cdp_analysis`, `DataCo-Market-Dashboard`,
   `SDG-Streamlit-Interactive-Dashboard`, `my-neovim-ds-config`, SANKHYA paths) ever
@@ -193,7 +193,7 @@ strings, slug uniqueness), the engine primitives (grid, ramps, scheduler, atlas,
 — engine files must not reference React) and React components/hooks.
 
 E2E tests (Playwright, `pnpm test:e2e`, builds + starts on :3100) cover the landing page
-and `/lab/ascii`: first-load JS budget, hydration/console cleanliness, theme toggle and
+and `/lab/ascii`: first-load JS budget, hydration/console cleanliness,
 system-preference following, reduced motion, off-screen pause, `<pre>` → canvas swap with
 no layout shift, the 360px overflow rules, the canvas exactly filling its figure at 1280px and 360px,
 and pixel-level ink checks on the ASCII canvas.
@@ -231,7 +231,7 @@ are used; `permissions: contents: read`; concurrency cancels in-progress runs fo
 
 ```
 app/                  # App Router root: layout.tsx, page.tsx, globals.css
-components/           # UI components (HeroHeading, ThemeToggle) + unit tests
+components/           # UI components (HeroHeading, SectionNav, ContactLinks) + unit tests
 components/ascii/     # ASCII engine (see above) + AsciiCanvas wrapper
 components/terminal/  # Interactive terminal (see above)
 components/sql/       # SQLite playground (sql.js worker; see above)

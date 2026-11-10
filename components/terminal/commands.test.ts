@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   certifications,
   education,
@@ -157,19 +157,6 @@ describe("commands", () => {
     }
   });
 
-  it("theme uses the provided accessors", () => {
-    const setTheme = vi.fn();
-    const result = runCommand("theme", {
-      data,
-      history: [],
-      getTheme: () => "dark",
-      setTheme,
-    });
-    expect(setTheme).toHaveBeenCalledWith("light");
-    expect(text(result.lines)).toContain("light");
-    expect(text(run("theme").lines)).toContain("not available");
-  });
-
   it("clear clears and history lists previous commands", () => {
     expect(run("clear").clear).toBe(true);
     const out = runCommand("history", { data, history: ["ls", "help"] });
@@ -216,5 +203,43 @@ describe("contact", () => {
       "mailto:sinhashreyit@gmail.com",
       "mailto:m2024bsass027@stud.tiss.ac.in",
     ]);
+  });
+});
+
+describe("easter eggs", () => {
+  it("sudo grants hire permission with a link to #contact", () => {
+    expect(text(run("sudo").lines)).toContain(
+      "nice try. permission granted to hire shreyit instead.",
+    );
+    expect(allLinks(run("sudo").lines)).toContain("#contact");
+  });
+
+  it("coffee prints a four-line cup and the chai line", () => {
+    const lines = run("coffee").lines;
+    expect(lines.length).toBe(5);
+    expect(text(lines)).toContain("┌─────┐");
+    expect(text(lines)).toContain(
+      "brewing... ☕ fieldwork runs on chai, actually.",
+    );
+  });
+
+  it("matrix prints the waking line", () => {
+    expect(text(run("matrix").lines)).toContain("wake up, recruiter.");
+  });
+
+  it("hire links the email address as a mailto", () => {
+    expect(allLinks(run("hire").lines)).toContain(
+      "mailto:sinhashreyit@gmail.com",
+    );
+  });
+
+  it("easter eggs are tab-completable but hidden from help", () => {
+    expect(complete("cof", data).value).toBe("coffee ");
+    expect(complete("mat", data).value).toBe("matrix ");
+    expect(complete("hir", data).value).toBe("hire ");
+    expect(complete("sud", data).value).toBe("sudo ");
+    expect(text(run("help").lines)).not.toMatch(
+      /\b(sudo|coffee|matrix|hire)\b/,
+    );
   });
 });

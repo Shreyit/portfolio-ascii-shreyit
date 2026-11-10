@@ -33,13 +33,9 @@ export interface TerminalData {
   certifications: Certification[];
 }
 
-export type Theme = "light" | "dark";
-
 export interface CommandContext {
   data: TerminalData;
   history: readonly string[];
-  getTheme?: () => Theme;
-  setTheme?: (theme: Theme) => void;
 }
 
 export interface CommandResult {

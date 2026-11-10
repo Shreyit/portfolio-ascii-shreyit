@@ -233,6 +233,8 @@ interface Command {
   summary: string;
   /** Hidden commands work but are not listed by `help`. */
   hidden?: boolean;
+  /** Hidden easter eggs: completable with Tab, still absent from `help`. */
+  egg?: boolean;
   run(args: string[], ctx: CommandContext): CommandResult;
 }
 
@@ -686,21 +688,6 @@ export const COMMANDS: Command[] = [
     },
   },
   {
-    name: "theme",
-    usage: "theme [light|dark]",
-    summary: "switch colour theme",
-    run(args, { getTheme, setTheme }) {
-      if (!getTheme || !setTheme) return error("theme: not available here");
-      const current = getTheme();
-      const wanted = args[0] ?? (current === "light" ? "dark" : "light");
-      if (wanted !== "light" && wanted !== "dark") {
-        return error("usage: theme [light|dark]");
-      }
-      setTheme(wanted);
-      return out([seg("theme: ", "muted"), seg(wanted, "accent")]);
-    },
-  },
-  {
     name: "history",
     usage: "history",
     summary: "commands you have run",
@@ -730,16 +717,54 @@ export const COMMANDS: Command[] = [
   // Easter eggs.
   {
     name: "sudo",
-    usage: "sudo",
+    usage: "sudo [anything]",
     summary: "",
     hidden: true,
+    egg: true,
     run: () =>
       out([
-        seg(
-          "visitor is not in the sudoers file. This incident will be reported.",
-          "error",
-        ),
+        seg("nice try. permission granted to hire shreyit instead. ", "accent"),
+        link("contact ↓", "#contact"),
       ]),
+  },
+  {
+    name: "coffee",
+    usage: "coffee",
+    summary: "",
+    hidden: true,
+    egg: true,
+    run: () =>
+      out(
+        [seg("   (  (")],
+        [seg("  )  )")],
+        [seg(" ┌─────┐")],
+        [seg(" │     │]")],
+        [seg("brewing... ☕ fieldwork runs on chai, actually.", "muted")],
+      ),
+  },
+  {
+    name: "matrix",
+    usage: "matrix",
+    summary: "",
+    hidden: true,
+    egg: true,
+    run: () => out([seg("wake up, recruiter.", "accent")]),
+  },
+  {
+    name: "hire",
+    usage: "hire",
+    summary: "",
+    hidden: true,
+    egg: true,
+    run(_args, { data }) {
+      const email = data.profile.links.email;
+      return out([
+        seg("let's talk. ", "accent"),
+        email
+          ? link(email, `mailto:${email}`)
+          : seg("email (not published yet)", "muted"),
+      ]);
+    },
   },
   {
     name: "vim",
@@ -854,7 +879,7 @@ export function complete(input: string, data: TerminalData): Completion {
 
   let pool: string[];
   if (completingName) {
-    pool = COMMANDS.filter((c) => !c.hidden).map((c) => c.name);
+    pool = COMMANDS.filter((c) => !c.hidden || c.egg).map((c) => c.name);
   } else {
     const command = findCommand(tokens[0]!)?.name;
     switch (command) {
@@ -867,9 +892,6 @@ export function complete(input: string, data: TerminalData): Completion {
         break;
       case "skills":
         pool = [...new Set(data.skills.map((s) => s.category))];
-        break;
-      case "theme":
-        pool = ["light", "dark"];
         break;
       case "help":
         pool = COMMANDS.filter((c) => !c.hidden).map((c) => c.name);

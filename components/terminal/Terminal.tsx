@@ -8,7 +8,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import type { Line, TerminalData, Theme } from "./types";
+import type { Line, TerminalData } from "./types";
 
 type CommandsModule = typeof import("./commands");
 
@@ -26,19 +26,6 @@ interface TerminalProps {
 }
 
 const MAX_ENTRIES = 200;
-
-function getTheme(): Theme {
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
-}
-
-function setTheme(theme: Theme): void {
-  document.documentElement.dataset.theme = theme;
-  try {
-    localStorage.setItem("theme", theme);
-  } catch {
-    // Storage unavailable — the theme still applies for this visit.
-  }
-}
 
 // The command set is loaded on first interaction, keeping it off the
 // critical path; the intro transcript is already server-rendered.
@@ -82,8 +69,6 @@ export function Terminal({
       const result = runCommand(trimmed, {
         data,
         history: nextHistory,
-        getTheme,
-        setTheme,
       });
       if (result.clear) {
         setEntries([]);

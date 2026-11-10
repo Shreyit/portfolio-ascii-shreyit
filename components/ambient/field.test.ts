@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AsciiGrid } from "@/components/ascii/engine/grid";
 import { SPECTRUM_BASE, LEVELS } from "@/components/ascii/engine/palette";
-import { REVEAL_RADIUS, drawField } from "./field";
+import { SWELL_RADIUS, drawField, quietMask } from "./field";
 
 const near = (x: number, y: number, cx: number, cy: number, r: number) =>
   Math.hypot(x - cx, (y - cy) * 2) < r;
@@ -40,11 +40,12 @@ describe("ambient field", () => {
   it("brightens around the pointer", () => {
     const off = new AsciiGrid(120, 40);
     const on = new AsciiGrid(120, 40);
-    drawField(off, 4, { x: 30, y: 20, active: false }, 0);
-    drawField(on, 4, { x: 30, y: 20, active: true }, 1);
-    const r = REVEAL_RADIUS * 0.4;
+    const dim = { intensity: 0.4, scroll: 0 };
+    drawField(off, 4, { x: 30, y: 20, active: false }, 0, dim);
+    drawField(on, 4, { x: 30, y: 20, active: true }, 1, dim);
+    const r = SWELL_RADIUS * 0.25;
     expect(brightness(on, 30, 20, r)).toBeGreaterThan(
-      brightness(off, 30, 20, r) + 1.5,
+      brightness(off, 30, 20, r) + 0.5,
     );
     // Far away the field is unchanged.
     expect(on.get(110, 2)).toEqual(off.get(110, 2));
@@ -58,6 +59,34 @@ describe("ambient field", () => {
     drawField(dim, 5, p, 0, { intensity: 0.4, scroll: 0 });
     expect(brightness(dim, 60, 20, 200)).toBeLessThan(
       brightness(full, 60, 20, 200),
+    );
+  });
+
+  it("fades out behind text and ripples brighten a ring", () => {
+    const p = { x: 0, y: 0, active: false };
+    const quiet = quietMask(120, 40, [{ x: 40, y: 15, w: 40, h: 4 }]);
+    expect(quiet[17 * 120 + 60]).toBeLessThan(0.2);
+    expect(quiet[2 * 120 + 2]).toBe(1);
+    const loud = new AsciiGrid(120, 40);
+    const hushed = new AsciiGrid(120, 40);
+    drawField(loud, 5, p, 0, { intensity: 1, scroll: 0 });
+    drawField(hushed, 5, p, 0, { intensity: 1, scroll: 0, quiet });
+    expect(brightness(hushed, 60, 17, 8)).toBeLessThan(
+      brightness(loud, 60, 17, 8),
+    );
+
+    const calm = new AsciiGrid(120, 40);
+    const wave = new AsciiGrid(120, 40);
+    // Dimmed, so the ring has headroom to brighten.
+    drawField(calm, 5, p, 0, { intensity: 0.4, scroll: 0 });
+    drawField(wave, 5, p, 0, {
+      intensity: 0.4,
+      scroll: 0,
+      ripples: [{ x: 60, y: 20, age: 0.3, power: 1 }],
+    });
+    // The ring sits about 0.3 s × speed columns out.
+    expect(brightness(wave, 60 + 14, 20, 3)).toBeGreaterThan(
+      brightness(calm, 60 + 14, 20, 3),
     );
   });
 });

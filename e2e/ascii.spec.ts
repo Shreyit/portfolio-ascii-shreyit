@@ -160,57 +160,41 @@ test("no horizontal overflow at 360px and no console errors", async ({
   expect(problems).toEqual([]);
 });
 
-test.describe("theme switch", () => {
-  // Start dark and switch to light: the direction where stale glyph colours
-  // (near-white on a near-white background) made the art disappear.
-  test.use({ colorScheme: "dark" });
+test("glyphs are visible against the dark background", async ({ page }) => {
+  await page.goto("/lab/ascii?asciiStats");
+  await expect
+    .poll(async () => (await statsAt(page, 0))?.frames ?? 0, {
+      timeout: 5000,
+    })
+    .toBeGreaterThan(0);
 
-  test("redraws glyphs in the new theme's colours", async ({ page }) => {
-    await page.goto("/lab/ascii?asciiStats");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await expect
-      .poll(async () => (await statsAt(page, 0))?.frames ?? 0, {
-        timeout: 5000,
-      })
-      .toBeGreaterThan(0);
-
-    const before = (await statsAt(page, 0))?.cellsDrawn ?? 0;
-    await page.getByRole("button", { name: "light theme" }).click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await expect
-      .poll(async () => ((await statsAt(page, 0))?.cellsDrawn ?? 0) - before)
-      .toBeGreaterThanOrEqual(160 * 60);
-
-    const bg = await cssVar(page, "--bg");
-    const ink = await page.evaluate((bgHex) => {
-      const [r0, g0, b0] = [1, 3, 5].map((i) =>
-        parseInt(bgHex.slice(i, i + 2), 16),
-      );
-      const lum = (r: number, g: number, b: number) =>
-        0.2126 * r + 0.7152 * g + 0.0722 * b;
-      const bgLum = lum(r0!, g0!, b0!);
-      const canvas =
-        document.querySelector<HTMLCanvasElement>(".ascii-canvas")!;
-      const data = canvas
-        .getContext("2d")!
-        .getImageData(0, 0, canvas.width, canvas.height).data;
-      let inkPixels = 0;
-      let darker = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        const l = lum(data[i]!, data[i + 1]!, data[i + 2]!);
-        if (Math.abs(l - bgLum) > 60) {
-          inkPixels += 1;
-          if (l < bgLum) darker += 1;
-        }
+  const bg = await cssVar(page, "--bg");
+  const ink = await page.evaluate((bgHex) => {
+    const [r0, g0, b0] = [1, 3, 5].map((i) =>
+      parseInt(bgHex.slice(i, i + 2), 16),
+    );
+    const lum = (r: number, g: number, b: number) =>
+      0.2126 * r + 0.7152 * g + 0.0722 * b;
+    const bgLum = lum(r0!, g0!, b0!);
+    const canvas = document.querySelector<HTMLCanvasElement>(".ascii-canvas")!;
+    const data = canvas
+      .getContext("2d")!
+      .getImageData(0, 0, canvas.width, canvas.height).data;
+    let inkPixels = 0;
+    let brighter = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const l = lum(data[i]!, data[i + 1]!, data[i + 2]!);
+      if (Math.abs(l - bgLum) > 60) {
+        inkPixels += 1;
+        if (l > bgLum) brighter += 1;
       }
-      return { inkPixels, darker, total: data.length / 4 };
-    }, bg);
+    }
+    return { inkPixels, brighter, total: data.length / 4 };
+  }, bg);
 
-    // Plenty of clearly visible glyph pixels, and they are darker than the
-    // light background (not the old near-white dark-theme foreground).
-    expect(ink.inkPixels / ink.total).toBeGreaterThan(0.02);
-    expect(ink.darker / ink.inkPixels).toBeGreaterThan(0.99);
-  });
+  // Plenty of clearly visible glyph pixels, lighter than the dark background.
+  expect(ink.inkPixels / ink.total).toBeGreaterThan(0.02);
+  expect(ink.brighter / ink.inkPixels).toBeGreaterThan(0.99);
 });
 
 for (const width of [1280, 360]) {

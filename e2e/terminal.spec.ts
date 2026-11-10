@@ -76,19 +76,6 @@ test("Tab on an empty prompt moves focus on (no keyboard trap)", async ({
   await expect(input).not.toBeFocused();
 });
 
-test("theme command switches the site theme", async ({ page }) => {
-  await page.goto("/");
-  const html = page.locator("html");
-  const before = await html.getAttribute("data-theme");
-  const input = prompt(page);
-  await input.fill("theme");
-  await input.press("Enter");
-  await expect(html).not.toHaveAttribute("data-theme", before ?? "");
-  await expect(
-    page.getByRole("button", { name: "light theme" }),
-  ).toHaveAttribute("aria-pressed", before === "light" ? "false" : "true");
-});
-
 test("clear empties the scrollback", async ({ page }) => {
   await page.goto("/");
   const input = prompt(page);

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/lib/motion/MotionProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { SectionNav } from "@/components/SectionNav";
 import { EffectsIsland } from "@/lib/motion/EffectsIsland";
 import { ContactLinks } from "@/components/ContactLinks";
@@ -32,24 +31,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0d0d0d" },
-    { media: "(prefers-color-scheme: light)", color: "#fafaf9" },
-  ],
+  themeColor: "#050507",
 };
-
-// Follows the system color scheme when the user has NOT chosen a theme;
-// once localStorage has "theme", system changes are ignored.
-const themeInitScript = `(function(){try{var stored=localStorage.getItem("theme");var media=window.matchMedia("(prefers-color-scheme: light)");var apply=function(light){document.documentElement.dataset.theme=light?"light":"dark";};if(stored==="light"||stored==="dark"){document.documentElement.dataset.theme=stored;}else{apply(media.matches);media.addEventListener("change",function(event){try{var current=localStorage.getItem("theme");if(current==="light"||current==="dark"){return;}}catch(ignore){}apply(event.matches);});}}catch(error){document.documentElement.dataset.theme="dark";}})();`;
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={jetbrainsMono.variable} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
+    <html
+      lang="en"
+      className={jetbrainsMono.variable}
+      style={{ colorScheme: "dark" }}
+      suppressHydrationWarning
+    >
       <body>
         {/* Behind everything, outside <main>: it must never paint over content. */}
         <AmbientIsland />
@@ -62,7 +56,6 @@ export default function RootLayout({
               ~/shreyit
             </a>
             <SectionNav />
-            <ThemeToggle />
           </header>
           <EffectsIsland />
           <main id="main" className="site-main">
@@ -70,7 +63,10 @@ export default function RootLayout({
           </main>
           <footer className="site-footer site-footer--stacked">
             <ContactLinks />
-            <span>&copy; Shreyit Sinha</span>
+            <p className="footer-wordmark" aria-hidden="true">
+              Shreyit
+            </p>
+            <span>&copy; Shreyit Sinha · made of characters</span>
           </footer>
         </MotionProvider>
       </body>

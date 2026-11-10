@@ -50,7 +50,9 @@ test.describe("lab panels", () => {
       (names) => {
         return names.map((name) => {
           const heading = [...document.querySelectorAll("h2")].find(
-            (h) => h.textContent?.trim() === name,
+            // aria-label holds the real name while a heading decodes.
+            (h) =>
+              (h.getAttribute("aria-label") ?? h.textContent?.trim()) === name,
           );
           const r = heading!.closest("section")!.getBoundingClientRect();
           return {

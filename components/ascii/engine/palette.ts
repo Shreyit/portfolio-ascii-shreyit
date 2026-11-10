@@ -12,8 +12,8 @@ export const SPECTRUM_BASE = 5;
 /** Hues interpolated across the --spectrum-* stops. */
 export const HUE_STEPS = 12;
 /** Brightness levels per hue, from barely-there to full colour. */
-export const LEVELS = 6;
-const LEVEL_MIX = [0.1, 0.22, 0.36, 0.52, 0.74, 1];
+export const LEVELS = 8;
+const LEVEL_MIX = [0.07, 0.13, 0.2, 0.29, 0.4, 0.54, 0.74, 1];
 const SPECTRUM_STOPS = 6;
 
 /**

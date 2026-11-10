@@ -73,76 +73,6 @@
   color-scheme: dark;
 }
 
-[data-theme="light"] {
-  --bg: #fbfaf8;
-  --fg: #1b1a22;
-  --muted: #5d5b69;
-  --accent: #6542c4;
-  --accent-2: #b3561d;
-  --border: #e4e1ea;
-  --surface: #ffffff;
-  --error: #b42318;
-  --spectrum-0: #4a4fc9;
-  --spectrum-1: #7552d9;
-  --spectrum-2: #9b5bd0;
-  --spectrum-3: #c75a9f;
-  --spectrum-4: #dc6b5f;
-  --spectrum-5: #d98a2b;
-  --gradient-brand: linear-gradient(
-    120deg,
-    #6542c4,
-    #9b5bd0 30%,
-    #c75a9f 55%,
-    #dc6b5f 75%,
-    #d98a2b
-  );
-  --shadow-panel:
-    0 12px 32px rgb(40 20 70 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
-  --shadow-panel-hover:
-    0 12px 32px rgb(40 20 70 / 0.12),
-    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
-    inset 0 1px 0 rgb(255 255 255 / 0.9);
-  --glow-accent: color-mix(in srgb, var(--spectrum-2) 14%, transparent);
-
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    --bg: #fbfaf8;
-    --fg: #1b1a22;
-    --muted: #5d5b69;
-    --accent: #6542c4;
-    --accent-2: #b3561d;
-    --border: #e4e1ea;
-    --surface: #ffffff;
-    --error: #b42318;
-    --spectrum-0: #4a4fc9;
-    --spectrum-1: #7552d9;
-    --spectrum-2: #9b5bd0;
-    --spectrum-3: #c75a9f;
-    --spectrum-4: #dc6b5f;
-    --spectrum-5: #d98a2b;
-    --gradient-brand: linear-gradient(
-      120deg,
-      #6542c4,
-      #9b5bd0 30%,
-      #c75a9f 55%,
-      #dc6b5f 75%,
-      #d98a2b
-    );
-    --shadow-panel:
-      0 12px 32px rgb(40 20 70 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
-    --shadow-panel-hover:
-      0 12px 32px rgb(40 20 70 / 0.12),
-      0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
-      inset 0 1px 0 rgb(255 255 255 / 0.9);
-    --glow-accent: color-mix(in srgb, var(--spectrum-2) 14%, transparent);
-
-    color-scheme: light;
-  }
-}
-
 *,
 *::before,
 *::after {
@@ -258,25 +188,6 @@ body {
   margin-top: var(--space-4);
   color: var(--muted);
   font-size: var(--text-lg);
-}
-
-.theme-toggle {
-  font: inherit;
-  font-size: var(--text-sm);
-  color: var(--fg);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-4);
-  cursor: pointer;
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
-}
-
-.theme-toggle:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1402,34 +1313,12 @@ section[id] {
   font-family: var(--font-mono);
 }
 
-.ambient-glow {
-  position: fixed;
-  top: -20rem;
-  left: -20rem;
-  z-index: 0;
-  width: 40rem;
-  height: 40rem;
-  border-radius: 50%;
-  background: radial-gradient(
-    closest-side,
-    var(--glow-accent),
-    transparent 70%
-  );
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
 /* Page content sits above the backdrop; panels are opaque, so the field
    only shows through the blank areas around them. */
 .site-main,
 .site-footer {
   position: relative;
   z-index: 1;
-}
-
-.theme-toggle {
-  white-space: nowrap;
 }
 
 /* Pointer-lit borders --------------------------------------------------- */
@@ -1693,4 +1582,19 @@ main h2 {
   margin-top: var(--space-4);
   color: var(--muted);
   font-size: var(--text-xs);
+}
+
+/* Footer wordmark: huge, solid, with the field glowing up behind it. */
+.footer-wordmark {
+  margin: var(--space-12) 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: clamp(4.5rem, 21vw, 19rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: var(--fg);
+  text-align: center;
+  user-select: none;
+  white-space: nowrap;
+  padding-bottom: 0.08em;
 }

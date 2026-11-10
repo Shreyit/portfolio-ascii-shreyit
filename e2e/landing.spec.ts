@@ -46,59 +46,6 @@ test("no console errors or hydration warnings on load", async ({ page }) => {
   expect(problems).toEqual([]);
 });
 
-test("theme toggle flips data-theme on <html>", async ({ page }) => {
-  await page.goto("/");
-  const html = page.locator("html");
-  const before = await html.getAttribute("data-theme");
-
-  await page.getByRole("button", { name: "light theme" }).click();
-
-  const after = await html.getAttribute("data-theme");
-  expect(after).not.toBe(before);
-  expect(["light", "dark"]).toContain(after);
-});
-
-test("theme persists across reload with matching aria-pressed", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const html = page.locator("html");
-  const before = await html.getAttribute("data-theme");
-  const toggled = before === "dark" ? "light" : "dark";
-
-  await page.getByRole("button", { name: "light theme" }).click();
-  await expect(html).toHaveAttribute("data-theme", toggled);
-
-  await page.reload();
-  await expect(html).toHaveAttribute("data-theme", toggled);
-  await expect(
-    page.getByRole("button", { name: "light theme" }),
-  ).toHaveAttribute("aria-pressed", toggled === "light" ? "true" : "false");
-});
-
-test.describe("light colorScheme with empty storage", () => {
-  test.use({ colorScheme: "light" });
-
-  test("data-theme is light at DOMContentLoaded (no flash)", async ({
-    page,
-  }) => {
-    await page.addInitScript(() => {
-      window.addEventListener("DOMContentLoaded", () => {
-        (
-          window as unknown as { __themeAtDCL: string | undefined }
-        ).__themeAtDCL = document.documentElement.dataset.theme;
-      });
-    });
-    await page.goto("/");
-    const themeAtDCL = await page.evaluate(
-      () =>
-        (window as unknown as { __themeAtDCL: string | undefined })
-          .__themeAtDCL,
-    );
-    expect(themeAtDCL).toBe("light");
-  });
-});
-
 test("no horizontal overflow at 360px", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto("/");
@@ -247,29 +194,4 @@ test("Sankhya live link is present; no Sankhya GitHub links", async ({
     expect(href).not.toContain("github.com/Shreyit/SANKHYA");
     expect(href).not.toContain("sankhya_landing");
   }
-});
-
-test.describe("system theme preference with empty storage", () => {
-  test.use({ colorScheme: "dark" });
-
-  test("data-theme follows the system until the user picks one", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-
-    await page.emulateMedia({ colorScheme: "light" });
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-
-    await page.emulateMedia({ colorScheme: "dark" });
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-
-    // User picks a theme: the system no longer drives <html data-theme>.
-    await page.getByRole("button", { name: "light theme" }).click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await page.emulateMedia({ colorScheme: "dark" });
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await page.emulateMedia({ colorScheme: "light" });
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  });
 });
