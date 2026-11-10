@@ -71,7 +71,7 @@ describe("ambient field", () => {
       expect(
         Math.abs(quiet[17 * 120 + x]! - quiet[17 * 120 + x - 1]!),
       ).toBeLessThan(0.12);
-    expect(quiet[2 * 120 + 2]).toBe(1);
+    expect(quiet[2 * 120 + 2]).toBeCloseTo(1, 3);
     const loud = new AsciiGrid(120, 40);
     const hushed = new AsciiGrid(120, 40);
     drawField(loud, 5, p, 0, { intensity: 1, scroll: 0 });

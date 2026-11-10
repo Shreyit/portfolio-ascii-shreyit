@@ -186,10 +186,10 @@ export function quietMask(
   for (const b of boxes) {
     const low = b.floor ?? floor;
     // Padded so the blurred dip still reaches the floor under the text.
-    const x0 = Math.max(0, Math.floor(b.x - 6));
-    const x1 = Math.min(cols - 1, Math.ceil(b.x + b.w + 6));
-    const y0 = Math.max(0, Math.floor(b.y - 2));
-    const y1 = Math.min(rows - 1, Math.ceil(b.y + b.h + 2));
+    const x0 = Math.max(0, Math.floor(b.x - 9));
+    const x1 = Math.min(cols - 1, Math.ceil(b.x + b.w + 9));
+    const y0 = Math.max(0, Math.floor(b.y - 3));
+    const y1 = Math.min(rows - 1, Math.ceil(b.y + b.h + 3));
     for (let y = y0; y <= y1; y += 1) {
       for (let x = x0; x <= x1; x += 1) {
         const i = y * cols + x;
