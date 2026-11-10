@@ -190,3 +190,16 @@ describe("complete", () => {
     expect(result.value.startsWith("cat nainital")).toBe(true);
   });
 });
+
+describe("lab commands", () => {
+  it("link every lab to its on-page section", () => {
+    const hrefs = (input: string) =>
+      runCommand(input, { data, history: [] }).lines.flatMap((l) =>
+        l.filter((s) => s.href).map((s) => s.href),
+      );
+    expect(hrefs("sql")).toContain("#sql-heading");
+    expect(hrefs("ml")).toContain("#ml-heading");
+    expect(hrefs("infra")).toContain("#infra-heading");
+    expect(hrefs("explore")).toContain("#research-heading");
+  });
+});

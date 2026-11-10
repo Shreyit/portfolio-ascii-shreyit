@@ -265,12 +265,14 @@ function labLines(key: ExperienceKey, data: TerminalData): Line[] {
         ? [link("open the ML laboratory ↓", "#ml-heading")]
         : key === "infra"
           ? [link("open the infrastructure simulator ↓", "#infra-heading")]
-          : [
-              seg(
-                "interactive lab in development — here is what it draws on:",
-                "muted",
-              ),
-            ];
+          : key === "research-explorer"
+            ? [
+                link(
+                  "open the research & fieldwork explorer ↓",
+                  "#research-heading",
+                ),
+              ]
+            : [seg("here is what it draws on:", "muted")];
   const lines: Line[] = [
     [seg(`[ ${LAB_TITLES[key]} ]`, "accent")],
     introLine,
