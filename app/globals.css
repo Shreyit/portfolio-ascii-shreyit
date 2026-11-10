@@ -313,7 +313,7 @@ body {
 .terminal-body {
   max-height: min(65vh, 34rem);
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
   padding: var(--space-4);
   cursor: text;
 }
@@ -742,7 +742,7 @@ button:disabled {
 .sql-result {
   max-height: 24rem;
   overflow: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);

@@ -139,7 +139,7 @@ export function SqlView(props: SqlViewProps) {
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
-            data-lenis-prevent
+            data-scroll-pane
             onChange={on((event: React.ChangeEvent<HTMLTextAreaElement>) =>
               props.onQueryChange?.(event.target.value),
             )}
@@ -188,7 +188,7 @@ export function SqlView(props: SqlViewProps) {
         {props.result && (
           <div
             className="sql-result"
-            data-lenis-prevent
+            data-scroll-pane
             tabIndex={0}
             aria-label="Query result"
           >

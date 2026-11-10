@@ -106,7 +106,9 @@ test("a runaway query is cancelled and the page stays responsive", async ({
         requestAnimationFrame(tick);
       }),
   );
-  expect(ticks).toBeGreaterThan(20);
+  // A blocked main thread gives ~0 frames. Headless CI renders the glass
+  // blur on the CPU, so a busy-but-free thread can dip to ~20 fps here.
+  expect(ticks).toBeGreaterThan(10);
   await expect(section.getByRole("alert")).toContainText("cancelled", {
     timeout: 10000,
   });

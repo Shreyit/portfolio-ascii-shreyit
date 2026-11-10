@@ -32,13 +32,17 @@ export function MotionProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Nested scroll panes that must keep native scrolling (e.g. a code block
-    // or terminal pane) should add `data-lenis-prevent` to the scrollable
-    // element — Lenis will not hijack wheel/touch events over it.
+    // Nested scroll panes (terminal output, SQL results) carry
+    // `data-scroll-pane`. They keep native scrolling only while they really
+    // overflow; otherwise the wheel goes to the page, so a pointer resting
+    // on a pane never blocks scrolling.
     const instance = new Lenis({
       autoRaf: false,
       lerp: 0.085,
       wheelMultiplier: 0.9,
+      prevent: (node) =>
+        node.hasAttribute?.("data-scroll-pane") === true &&
+        node.scrollHeight > node.clientHeight + 1,
     });
     const onScroll = () => getScrollTrigger()?.update();
     instance.on("scroll", onScroll);

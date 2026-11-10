@@ -13,7 +13,7 @@ export default function AsciiLabPage() {
       <h1>ASCII engine lab</h1>
       <p>Engine test page — not portfolio content.</p>
 
-      <div className="ascii-scroll" data-lenis-prevent>
+      <div className="ascii-scroll">
         <PlasmaCanvas
           cols={160}
           rows={60}

@@ -94,7 +94,7 @@ export default function InfraLab({ idBase }: { idBase: string }) {
             {text}
           </pre>
         ) : (
-          <div className="ascii-scroll" data-lenis-prevent>
+          <div className="ascii-scroll">
             <AsciiCanvas
               scene={scene}
               cols={COLS}

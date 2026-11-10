@@ -152,7 +152,7 @@ export function Terminal({
       <div
         ref={logRef}
         className="terminal-body"
-        data-lenis-prevent
+        data-scroll-pane
         onPointerEnter={() => void loadCommands()}
         onClick={() => {
           if (!window.getSelection()?.toString()) inputRef.current?.focus();
