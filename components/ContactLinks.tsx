@@ -1,4 +1,5 @@
 import { profile } from "@/content";
+import { ContactIcon } from "./ContactIcon";
 import styles from "./ContactLinks.module.css";
 
 const stripProtocol = (url: string) => url.replace(/^https?:\/\//, "");
@@ -53,6 +54,9 @@ export function ContactLinks() {
       <ul className={styles.list}>
         {entries.map(({ label, text, href, external }) => (
           <li key={label} className={styles.item}>
+            <span className={styles.icon}>
+              <ContactIcon kind={label} />
+            </span>
             <span className={styles.label}>{label}</span>
             <a
               className={styles.link}

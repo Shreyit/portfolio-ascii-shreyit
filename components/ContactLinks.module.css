@@ -68,3 +68,18 @@
 .link:focus-visible {
   text-decoration: underline;
 }
+
+.icon {
+  display: inline-flex;
+  align-self: center;
+  color: var(--accent);
+}
+
+.icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.item {
+  align-items: center;
+}

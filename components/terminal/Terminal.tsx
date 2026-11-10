@@ -142,7 +142,7 @@ export function Terminal({
   };
 
   return (
-    <section className="terminal" aria-label="Interactive terminal">
+    <section className="terminal spot" aria-label="Interactive terminal">
       <div className="terminal-bar" aria-hidden="true">
         <span className="terminal-dot" />
         <span className="terminal-dot" />

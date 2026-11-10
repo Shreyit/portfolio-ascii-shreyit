@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Pixelify_Sans } from "next/font/google";
 import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { SectionNav } from "@/components/SectionNav";
 import { EffectsIsland } from "@/lib/motion/EffectsIsland";
@@ -12,6 +12,13 @@ import "./globals.css";
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+});
+
+// Section headings only; swapped in without blocking text.
+const pixelify = Pixelify_Sans({
+  variable: "--font-pixel",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const title = "Shreyit Sinha";
@@ -40,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={jetbrainsMono.variable}
+      className={`${jetbrainsMono.variable} ${pixelify.variable}`}
       style={{ colorScheme: "dark" }}
       suppressHydrationWarning
     >

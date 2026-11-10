@@ -30,10 +30,11 @@ test.describe("lab panels", () => {
       expect(styles.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
       expect(styles.backgroundColor).not.toBe("transparent");
 
-      // Visible title bar: first child with three dots and the command text.
+      // Visible title bar: three dots and the command text, then any
+      // actions (repo link, internship badge).
       const bar = region.locator("> div").first();
       await expect(bar).toBeVisible();
-      await expect(bar.locator("span")).toHaveCount(4);
+      await expect(bar.locator("> span:not(.lab-badge)")).toHaveCount(4);
     });
   }
 

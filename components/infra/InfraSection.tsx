@@ -22,20 +22,19 @@ export function InfraSection() {
       id={`${ID}-heading`}
       title="Infrastructure simulator"
       command="~/labs/aws-sim"
+      actions={
+        job ? (
+          <span className="lab-badge">
+            <span className="lab-callout-tag">internship</span>
+            <span className="lab-callout-role">
+              {job.role}, {job.organisation}
+            </span>
+            <span className="lab-callout-meta">{formatPeriod(job.period)}</span>
+          </span>
+        ) : null
+      }
       intro={
         <>
-          {job ? (
-            <p className="lab-callout">
-              <span className="lab-callout-tag">internship</span>
-              <span className="lab-callout-role">
-                {job.role}, {job.organisation}
-              </span>
-              <span className="lab-callout-meta">
-                {job.location ? `${job.location} · ` : ""}
-                {formatPeriod(job.period)}
-              </span>
-            </p>
-          ) : null}
           <p className="lab-intro">
             The pattern behind my internship backend: FastAPI on EC2 in an Auto
             Scaling group behind a load balancer, static assets on S3 and
