@@ -4,11 +4,11 @@ import type { PointerInput } from "@/components/ascii/engine/scene";
 
 /** Mostly '#', salted with the rest of the printable set. */
 const GLYPHS = "#####$%&*+=-:;~<>(){}[]|/\\@8BX0S?!^";
-/** Denser glyphs where a ripple passes. */
+/** Denser glyphs around the pointer and where a ripple passes. */
 const HOT = "@#%&8B$";
 const CELL_ASPECT = 2; // row height / column width
 /** Radius (columns) of the soft swell that follows the pointer. */
-export const SWELL_RADIUS = 34;
+export const SWELL_RADIUS = 26;
 /** Ripple speed (columns per second) and lifetime (seconds). */
 const RIPPLE_SPEED = 46;
 export const RIPPLE_LIFE = 1.8;
@@ -107,10 +107,12 @@ export function drawField(
         const dy = (y - pointer.y) * CELL_ASPECT;
         const d2 = dx * dx + dy * dy;
         if (d2 < swell2) {
-          // Gaussian-ish swell: no hard rim.
-          const g = Math.exp((-3 * d2) / swell2) * fade;
-          level += g * 0.35;
-          hue += g * 0.25;
+          // Gaussian reveal, no hard rim: brighter, warmer and denser
+          // glyphs that blend back into the field.
+          const g = Math.exp((-3.2 * d2) / swell2) * fade;
+          level += g * 0.6;
+          hue += g * 0.3;
+          hot = Math.max(hot, g);
         }
       }
 
@@ -165,13 +167,23 @@ export function ageRipples(ripples: Ripple[], dt: number): Ripple[] {
 export function quietMask(
   cols: number,
   rows: number,
-  boxes: readonly { x: number; y: number; w: number; h: number }[],
-  floor = 0.12,
+  boxes: readonly {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    /** Overrides the default floor (lighter hush). */
+    floor?: number;
+    /** Margin scale: larger gives a wider, softer falloff. */
+    soft?: number;
+  }[],
+  floor = 0.15,
 ): Float32Array {
   const out = new Float32Array(cols * rows).fill(1);
-  const mx = 5;
-  const my = 1.5;
   for (const b of boxes) {
+    const mx = 10 * (b.soft ?? 1);
+    const my = 3 * (b.soft ?? 1);
+    const low = b.floor ?? floor;
     const x0 = Math.max(0, Math.floor(b.x - mx));
     const x1 = Math.min(cols - 1, Math.ceil(b.x + b.w + mx));
     const y0 = Math.max(0, Math.floor(b.y - my));
@@ -180,7 +192,8 @@ export function quietMask(
       const oy = Math.max(b.y - y, y - (b.y + b.h), 0) / my;
       for (let x = x0; x <= x1; x += 1) {
         const ox = Math.max(b.x - x, x - (b.x + b.w), 0) / mx;
-        const v = floor + (1 - floor) * smooth(0, 1, Math.max(ox, oy));
+        // Euclidean falloff: rounded, edgeless corners.
+        const v = low + (1 - low) * smooth(0, 1, Math.hypot(ox, oy));
         const i = y * cols + x;
         if (v < out[i]!) out[i] = v;
       }

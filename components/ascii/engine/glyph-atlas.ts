@@ -23,7 +23,9 @@ export interface AtlasOptions {
 }
 
 export const MAX_ATLAS_SIZE = 2048;
-const INITIAL_SLOTS_PER_ROW = 32;
+// Wide rows: spectrum scenes use thousands of (char, colour) pairs, and only
+// the height grows, so the width sets the capacity (128 × 64+ rows).
+const INITIAL_SLOTS_PER_ROW = 128;
 const INITIAL_ROWS = 4;
 
 function defaultCanvas(width: number, height: number): AtlasCanvas {

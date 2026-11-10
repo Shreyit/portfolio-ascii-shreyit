@@ -44,7 +44,7 @@ function options(overrides: Partial<AtlasOptions> = {}): AtlasOptions {
 describe("GlyphAtlas", () => {
   it("starts small instead of allocating the maximum surface", () => {
     const atlas = new GlyphAtlas(options());
-    expect(atlas.size.width).toBe(320);
+    expect(atlas.size.width).toBe(1280);
     expect(atlas.size.height).toBe(80);
   });
 

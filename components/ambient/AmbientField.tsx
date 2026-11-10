@@ -17,18 +17,15 @@ const QUIET = [
   "main h3",
   "main p",
   "main li",
-  ".hero-art",
   ".site-header",
   ".site-footer a",
   ".site-footer > span",
 ].join(", ");
-/** Columns the pointer must travel before it drops another ripple. */
-const RIPPLE_STEP = 22;
 const MAX_RIPPLES = 6;
 
 /** The tight box of an element's text (block elements span full width). */
 function textBox(el: Element): DOMRect {
-  if (el.matches(".hero-art, .site-header")) return el.getBoundingClientRect();
+  if (el.matches(".site-header")) return el.getBoundingClientRect();
   const range = document.createRange();
   range.selectNodeContents(el);
   const box = range.getBoundingClientRect();
@@ -38,8 +35,8 @@ function textBox(el: Element): DOMRect {
 /**
  * Full-viewport ASCII backdrop behind the page. Fixed and non-interactive
  * (pointer-events: none); opaque panels sit above it and it fades out
- * behind loose text. It reads the pointer from the window: the field swells
- * softly around it, and moving or clicking sends ripples through it.
+ * behind loose text. It reads the pointer from the window: the field is
+ * revealed softly around it, and clicking empty space sends a ripple.
  */
 export default function AmbientField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -52,8 +49,9 @@ export default function AmbientField() {
     let grid: AsciiGrid | null = null;
     let fade = 0;
     let ripples: Ripple[] = [];
-    let last = { x: -999, y: -999 };
     let quietEls: Element[] = [];
+    // Re-queried on each scan: the hero swaps its static figure for a canvas.
+    let heroEl: Element | null = null;
     let lastScan = -Infinity;
     const pointer: PointerInput = { x: 0, y: 0, active: false };
     const target: PointerInput = { x: 0, y: 0, active: false };
@@ -92,10 +90,6 @@ export default function AmbientField() {
       target.x = c.x;
       target.y = c.y;
       target.active = true;
-      if (Math.hypot(c.x - last.x, (c.y - last.y) * 2) > RIPPLE_STEP) {
-        last = c;
-        addRipple(c.x, c.y, 0.45);
-      }
     };
     const onDown = (event: PointerEvent) => {
       const el = event.target as Element | null;
@@ -127,12 +121,25 @@ export default function AmbientField() {
         // Islands mount late, so rescan the text elements now and then.
         if (timeMs - lastScan > 1500) {
           lastScan = timeMs;
+          heroEl = document.querySelector(".hero-art");
           quietEls = [...document.querySelectorAll(QUIET)].filter(
             (el) => !el.closest(".spot"),
           );
         }
         const vh = window.innerHeight;
-        const boxes = [];
+        const boxes: Parameters<typeof quietMask>[2][number][] = [];
+        // A wide, soft oval hush behind the hero name (no hard box).
+        const hero = heroEl?.getBoundingClientRect();
+        if (hero && hero.bottom > 0) {
+          boxes.push({
+            x: hero.left / CELL_W,
+            y: hero.top / CELL_H,
+            w: hero.width / CELL_W,
+            h: hero.height / CELL_H,
+            floor: 0.12,
+            soft: 2,
+          });
+        }
         for (const el of quietEls) {
           const r = textBox(el);
           if (r.bottom < 0 || r.top > vh || !r.width) continue;
