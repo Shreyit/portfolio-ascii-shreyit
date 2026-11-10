@@ -2,21 +2,21 @@ import type { CSSProperties } from "react";
 import { AsciiGrid } from "@/components/ascii/engine/grid";
 import { HERO_LABEL, HERO_MIN_FONT_PX } from "./constants";
 import { HeroIsland } from "./HeroIsland";
-import { HERO_COLS, HERO_ROWS, createTerrainScene } from "./terrain";
+import { NAME_COLS, NAME_ROWS, createNameScene } from "./name";
 
 /**
- * Server-rendered static contour map (zero JS, readable without scripts),
+ * Server-rendered static name art (zero JS, readable without scripts),
  * upgraded to the animated canvas by HeroIsland. Uses the same figure
  * markup and sizing as AsciiCanvas so the swap causes no layout shift.
  */
 export function HeroArt() {
-  const grid = new AsciiGrid(HERO_COLS, HERO_ROWS);
-  createTerrainScene().staticFrame(grid);
+  const grid = new AsciiGrid(NAME_COLS, NAME_ROWS);
+  createNameScene().staticFrame(grid);
   const style = {
-    "--ascii-cols": HERO_COLS,
-    "--ascii-rows": HERO_ROWS,
+    "--ascii-cols": NAME_COLS,
+    "--ascii-rows": NAME_ROWS,
     "--ascii-min-font": `${HERO_MIN_FONT_PX}px`,
-    aspectRatio: `${HERO_COLS * 0.6} / ${HERO_ROWS * 1.2}`,
+    aspectRatio: `${NAME_COLS * 0.6} / ${NAME_ROWS * 1.2}`,
   } as CSSProperties;
   return (
     <HeroIsland>

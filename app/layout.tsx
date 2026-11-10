@@ -4,6 +4,7 @@ import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SectionNav } from "@/components/SectionNav";
 import { ContactLinks } from "@/components/ContactLinks";
+import { AmbientIsland } from "@/components/ambient/AmbientIsland";
 import styles from "@/components/SectionNav.module.css";
 import "lenis/dist/lenis.css";
 import "./globals.css";
@@ -49,6 +50,8 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        {/* Behind everything, outside <main>: it must never paint over content. */}
+        <AmbientIsland />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

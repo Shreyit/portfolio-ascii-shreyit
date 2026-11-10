@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SqlClient } from "./client";
-import { formatTable } from "./format";
 import { PRESETS, type Statement } from "./schema";
 import { SqlView, type SqlViewResult } from "./SqlView";
 
@@ -26,6 +25,8 @@ export default function SqlPlayground({
   const [result, setResult] = useState<SqlViewResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [activeTable, setActiveTable] = useState<string | null>(null);
+  // The query last executed; the Run button glows while the editor differs.
+  const [lastRun, setLastRun] = useState<string | null>(null);
 
   useEffect(() => {
     const instance = new SqlClient(statements);
@@ -38,20 +39,13 @@ export default function SqlPlayground({
     if (!instance || !sql.trim()) return;
     setBusy(true);
     setError(null);
+    setLastRun(sql);
     setStatus("booting sqlite…");
     try {
       await instance.boot();
       setStatus("running…");
       const r = await instance.query(sql);
-      setResult(
-        r.columns.length
-          ? {
-              lines: formatTable(r.columns, r.rows),
-              columns: r.columns,
-              rows: r.rows,
-            }
-          : null,
-      );
+      setResult(r.columns.length ? { columns: r.columns, rows: r.rows } : null);
       const shown =
         r.rows.length < r.totalRows ? ` (showing ${r.rows.length})` : "";
       setStatus(
@@ -95,15 +89,10 @@ export default function SqlPlayground({
       onQueryChange={setQuery}
       onRun={() => void run(query)}
       onReset={() => void reset()}
-      onPreset={(sql) => {
-        setQuery(sql);
-        void run(sql);
-      }}
-      onSelectTable={(table) => {
-        const sql = `SELECT *\nFROM ${table}\nLIMIT 10;`;
-        setQuery(sql);
-        void run(sql);
-      }}
+      pending={query.trim() !== "" && query !== lastRun}
+      // Choosing a preset or a table loads the query; the visitor runs it.
+      onPreset={setQuery}
+      onSelectTable={(table) => setQuery(`SELECT *\nFROM ${table}\nLIMIT 10;`)}
       onHoverTable={setActiveTable}
     />
   );

@@ -41,3 +41,17 @@
 .link:focus-visible {
   color: var(--accent);
 }
+
+/* Narrow screens: name + theme toggle on the first row, the section links
+   on their own full-width, swipeable row below. */
+@media (max-width: 40rem) {
+  .header {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .nav {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

@@ -1,11 +1,10 @@
 import type React from "react";
 // Presentational only (no hooks, no "use client"): rendered by the server as
 // the static fallback, and by the lazily loaded SqlPlayground with handlers.
-import type { Cell } from "./format";
-import { PRESETS, TABLES, type TableDef } from "./schema";
+import { showCell, type Cell } from "./format";
+import { PRESETS, TABLES } from "./schema";
 
 export interface SqlViewResult {
-  lines: string[];
   columns: string[];
   rows: Cell[][];
 }
@@ -18,6 +17,8 @@ export interface SqlViewProps {
   error: string | null;
   result: SqlViewResult | null;
   busy?: boolean;
+  /** The editor holds a query that has not been run yet. */
+  pending?: boolean;
   activeTable?: string | null;
   onQueryChange?: (sql: string) => void;
   onRun?: () => void;
@@ -25,24 +26,6 @@ export interface SqlViewProps {
   onPreset?: (sql: string) => void;
   onSelectTable?: (table: string) => void;
   onHoverTable?: (table: string | null) => void;
-}
-
-export function tableBox(table: TableDef, rows: number | undefined): string[] {
-  const nameWidth = Math.max(...table.columns.map((c) => c.name.length)) + 2;
-  const body = table.columns.map((c) => {
-    const tag = c.pk ? "PK" : c.ref ? `→ ${c.ref.split(".")[0]}` : "";
-    return [c.name.padEnd(nameWidth), c.type.padEnd(8), tag].join("").trimEnd();
-  });
-  const footer =
-    rows === undefined ? "" : ` ${rows} row${rows === 1 ? "" : "s"} `;
-  const width = Math.max(
-    table.name.length + 4,
-    footer.length + 2,
-    ...body.map((b) => b.length),
-  );
-  const top = `┌─ ${table.name} ${"─".repeat(width - table.name.length - 1)}┐`;
-  const bottom = `└${"─".repeat(width + 1 - footer.length)}${footer}─┘`;
-  return [top, ...body.map((b) => `│ ${b.padEnd(width)} │`), bottom];
 }
 
 /** Tables joined to `name` by a foreign key, in either direction. */
@@ -66,38 +49,62 @@ export function SqlView(props: SqlViewProps) {
   const related = props.activeTable
     ? relatedTables(props.activeTable)
     : new Set<string>();
+
   return (
     <div className="sql">
-      <div className="sql-tables" role="list" aria-label="Database tables">
-        {TABLES.map((table) => {
-          const box = tableBox(table, props.counts[table.name]).join("\n");
-          const active = props.activeTable === table.name;
-          return (
-            <div key={table.name} role="listitem" className="sql-table-item">
-              <button
-                type="button"
-                className="sql-table"
-                data-active={active}
-                data-related={related.has(table.name)}
-                disabled={!interactive}
-                onClick={on(() => props.onSelectTable?.(table.name))}
-                onMouseEnter={on(() => props.onHoverTable?.(table.name))}
-                onMouseLeave={on(() => props.onHoverTable?.(null))}
-                onFocus={on(() => props.onHoverTable?.(table.name))}
-                onBlur={on(() => props.onHoverTable?.(null))}
-              >
-                <span className="visually-hidden">
-                  {`${table.name}: ${table.description}, ${props.counts[table.name] ?? 0} rows. Query this table.`}
-                </span>
-                <pre aria-hidden="true">{box}</pre>
-              </button>
-              <p className="sql-table-desc">{table.description}</p>
-            </div>
-          );
-        })}
+      <div className="sql-schema">
+        <p className="sql-label">schema · {TABLES.length} tables</p>
+        <div className="sql-tables" role="list" aria-label="Database tables">
+          {TABLES.map((table) => {
+            const rows = props.counts[table.name] ?? 0;
+            return (
+              <div key={table.name} role="listitem" className="sql-table-item">
+                <button
+                  type="button"
+                  className="sql-card"
+                  data-active={props.activeTable === table.name}
+                  data-related={related.has(table.name)}
+                  disabled={!interactive}
+                  onClick={on(() => props.onSelectTable?.(table.name))}
+                  onMouseEnter={on(() => props.onHoverTable?.(table.name))}
+                  onMouseLeave={on(() => props.onHoverTable?.(null))}
+                  onFocus={on(() => props.onHoverTable?.(table.name))}
+                  onBlur={on(() => props.onHoverTable?.(null))}
+                >
+                  <span className="sql-card-head">
+                    <span className="sql-card-name">{table.name}</span>
+                    <span className="sql-card-rows">
+                      {rows} row{rows === 1 ? "" : "s"}
+                    </span>
+                  </span>
+                  <span className="sql-card-cols" aria-hidden="true">
+                    {table.columns.map((c) => (
+                      <span key={c.name} className="sql-col">
+                        <span className="sql-col-name">{c.name}</span>
+                        <span className="sql-col-type">{c.type}</span>
+                        <span className="sql-col-tag">
+                          {c.pk
+                            ? "PK"
+                            : c.ref
+                              ? `-> ${c.ref.split(".")[0]}`
+                              : ""}
+                        </span>
+                      </span>
+                    ))}
+                  </span>
+                  <span className="sql-card-desc">{table.description}</span>
+                  <span className="visually-hidden">
+                    {`. Columns: ${table.columns.map((c) => c.name).join(", ")}. Load a query for this table.`}
+                  </span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className="sql-console">
+        <p className="sql-label">example queries</p>
         <div className="sql-presets" aria-label="Example queries">
           {PRESETS.map((preset) => (
             <button
@@ -119,35 +126,45 @@ export function SqlView(props: SqlViewProps) {
         >
           SQL query
         </label>
-        <textarea
-          id={`${props.headingId}-editor`}
-          className="sql-editor"
-          value={props.query}
-          readOnly={!interactive}
-          rows={7}
-          spellCheck={false}
-          autoCapitalize="off"
-          autoCorrect="off"
-          data-lenis-prevent
-          onChange={on((event: React.ChangeEvent<HTMLTextAreaElement>) =>
-            props.onQueryChange?.(event.target.value),
-          )}
-          onKeyDown={on((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-              event.preventDefault();
-              props.onRun?.();
-            }
-          })}
-        />
+        <div className="sql-editor-wrap" data-pending={props.pending ?? false}>
+          <span className="sql-editor-prompt" aria-hidden="true">
+            sqlite&gt;
+          </span>
+          <textarea
+            id={`${props.headingId}-editor`}
+            className="sql-editor"
+            value={props.query}
+            readOnly={!interactive}
+            rows={7}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+            data-lenis-prevent
+            onChange={on((event: React.ChangeEvent<HTMLTextAreaElement>) =>
+              props.onQueryChange?.(event.target.value),
+            )}
+            onKeyDown={on((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                props.onRun?.();
+              }
+            })}
+          />
+        </div>
 
         <div className="sql-actions">
           <button
             type="button"
             className="sql-run"
+            data-pending={props.pending ?? false}
+            aria-busy={props.busy ?? false}
             disabled={!interactive || props.busy}
             onClick={props.onRun}
           >
-            run <span className="t-muted">⌘/ctrl ↵</span>
+            {props.busy ? "running…" : "run"}{" "}
+            <span className="sql-kbd" aria-hidden="true">
+              ⌘/ctrl ↵
+            </span>
           </button>
           <button
             type="button"
@@ -175,8 +192,7 @@ export function SqlView(props: SqlViewProps) {
             tabIndex={0}
             aria-label="Query result"
           >
-            <pre aria-hidden="true">{props.result.lines.join("\n")}</pre>
-            <table className="visually-hidden">
+            <table>
               <thead>
                 <tr>
                   {props.result.columns.map((c) => (
@@ -190,7 +206,13 @@ export function SqlView(props: SqlViewProps) {
                 {props.result.rows.map((row, i) => (
                   <tr key={i}>
                     {row.map((cell, j) => (
-                      <td key={j}>{cell === null ? "NULL" : String(cell)}</td>
+                      <td
+                        key={j}
+                        data-numeric={typeof cell === "number"}
+                        data-null={cell === null}
+                      >
+                        {showCell(cell)}
+                      </td>
                     ))}
                   </tr>
                 ))}

@@ -32,6 +32,14 @@ test("static schema is server-rendered without JavaScript", async ({
 test("preset queries run against real SQLite", async ({ page }) => {
   const section = await openPlayground(page);
   await section.getByRole("button", { name: "fieldwork samples" }).click();
+  // Choosing a preset only loads it; the Run button invites the click.
+  const run = section.getByRole("button", { name: /^run/ });
+  await expect(run).toHaveAttribute("data-pending", "true");
+  expect(await run.evaluate((el) => getComputedStyle(el).animationName)).toBe(
+    "sql-glow",
+  );
+  await expect(section.getByLabel("Query result")).toHaveCount(0);
+  await run.click();
   const status = section.getByRole("status");
   await expect(status).toContainText(/\d+ rows? · [\d.]+ ms/, {
     timeout: 15000,
@@ -45,7 +53,8 @@ test("preset queries run against real SQLite", async ({ page }) => {
 
 test("clicking a table queries it", async ({ page }) => {
   const section = await openPlayground(page);
-  await section.getByRole("button", { name: /^projects:/ }).click();
+  await section.getByRole("button", { name: /^projects \d+ rows?/ }).click();
+  await section.getByRole("button", { name: /^run/ }).click();
   await expect(section.getByLabel("Query result")).toContainText(
     "rinn-microcredit-risk",
     { timeout: 15000 },

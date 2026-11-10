@@ -12,9 +12,9 @@ import {
   skills,
 } from "@/content";
 import type { TerminalData } from "@/components/terminal/types";
-import { formatTable } from "./format";
+import { showCell } from "./format";
 import { PRESETS, TABLES, ddl, seed } from "./schema";
-import { relatedTables, tableBox } from "./SqlView";
+import { relatedTables } from "./SqlView";
 
 const data: TerminalData = {
   profile,
@@ -85,37 +85,17 @@ describe("seeded database", () => {
   });
 });
 
-describe("formatTable", () => {
-  it("draws a box, right-aligns numbers and clips long cells", () => {
-    const lines = formatTable(
-      ["name", "n"],
-      [
-        ["a", 5],
-        ["bbbbbbbbbb", 123],
-        [null, null],
-      ],
-      6,
-    );
-    expect(lines).toEqual([
-      "┌────────┬──────┐",
-      "│ name   │    n │",
-      "├────────┼──────┤",
-      "│ a      │    5 │",
-      "│ bbbbb… │  123 │",
-      "│ NULL   │ NULL │",
-      "└────────┴──────┘",
-    ]);
-    expect(new Set(lines.map((l) => l.length)).size).toBe(1);
+describe("showCell", () => {
+  it("shows NULLs, numbers and blobs readably", () => {
+    expect(showCell(null)).toBe("NULL");
+    expect(showCell(42)).toBe("42");
+    expect(showCell("a b")).toBe("a b");
+    expect(showCell(new Uint8Array(3))).toBe("<blob 3B>");
   });
 });
 
 describe("diagram", () => {
-  it("draws equal-width boxes and finds foreign-key neighbours", () => {
-    for (const t of TABLES) {
-      const box = tableBox(t, 3);
-      expect(new Set(box.map((l) => l.length)).size).toBe(1);
-      expect(box[0]).toContain(t.name);
-    }
+  it("finds foreign-key neighbours", () => {
     expect(relatedTables("projects")).toEqual(
       new Set(["project_pillars", "project_stack", "highlights"]),
     );

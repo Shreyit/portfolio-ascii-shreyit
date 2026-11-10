@@ -33,10 +33,16 @@ export function HeroHeading() {
 
   return (
     <div ref={scope} className="hero-heading">
-      <h1>Shreyit Sinha</h1>
-      <span ref={cursor} className="terminal-cursor" aria-hidden="true">
-        _
-      </span>
+      {/* The ASCII art above is the visual name; the heading stays the
+          real, readable title for search engines and screen readers. */}
+      <h1 className="visually-hidden">Shreyit Sinha</h1>
+      <p className="hero-role" aria-hidden="true">
+        <span className="t-prompt">&gt;</span> analytics · sustainability ·
+        engineering
+        <span ref={cursor} className="terminal-cursor">
+          _
+        </span>
+      </p>
     </div>
   );
 }

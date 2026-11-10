@@ -1,3 +1,3 @@
 export const HERO_LABEL =
-  "Animated ASCII contour map of hills and a lake; move the pointer over it to raise the terrain.";
+  "Shreyit Sinha, spelled out in ASCII characters. Move the pointer over the letters to scatter them; click to burst them apart.";
 export const HERO_MIN_FONT_PX = 3.5;

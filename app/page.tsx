@@ -56,12 +56,11 @@ const intro = [
 export default function Home() {
   return (
     <>
+      <HeroArt />
       <HeroHeading />
       <p className="tagline">
         {profile.degree} · {profile.institution}
       </p>
-
-      <HeroArt />
 
       <Terminal data={terminalData} intro={intro} />
 

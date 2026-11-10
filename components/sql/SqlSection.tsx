@@ -1,4 +1,5 @@
 import type { TerminalData } from "@/components/terminal/types";
+import { LabPanel } from "@/components/LabPanel";
 import { SqlIsland } from "./SqlIsland";
 import { PRESETS, TABLES, seed } from "./schema";
 import { SqlView } from "./SqlView";
@@ -16,13 +17,18 @@ export function SqlSection({ data }: { data: TerminalData }) {
   }
 
   return (
-    <section className="lab-section" aria-labelledby={HEADING_ID}>
-      <h2 id={HEADING_ID}>SQL playground</h2>
-      <p className="lab-intro">
-        This portfolio, as a real SQLite database running in your browser. Hover
-        a table, pick a query or write your own. It is your copy: drop tables if
-        you like, then reset.
-      </p>
+    <LabPanel
+      id={HEADING_ID}
+      title="SQL playground"
+      command="~/labs/portfolio.sqlite"
+      intro={
+        <p className="lab-intro">
+          This portfolio, as a real SQLite database running in your browser.
+          Hover a table, pick a query or write your own. It is your copy: drop
+          tables if you like, then reset.
+        </p>
+      }
+    >
       <SqlIsland headingId={HEADING_ID} statements={statements} counts={counts}>
         <SqlView
           headingId={HEADING_ID}
@@ -33,6 +39,6 @@ export function SqlSection({ data }: { data: TerminalData }) {
           result={null}
         />
       </SqlIsland>
-    </section>
+    </LabPanel>
   );
 }

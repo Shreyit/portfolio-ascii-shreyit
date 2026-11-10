@@ -3,9 +3,9 @@
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 
 /**
- * Swaps the server-rendered static map for the animated one once the page
+ * Swaps the server-rendered static name for the animated one once the page
  * has loaded and the browser is idle, keeping the animation off the
- * critical path. With reduced motion the static map simply stays.
+ * critical path. With reduced motion the static name simply stays.
  */
 export function HeroIsland({ children }: { children: ReactNode }) {
   const [Canvas, setCanvas] = useState<ComponentType | null>(null);

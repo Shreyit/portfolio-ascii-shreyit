@@ -456,15 +456,21 @@ body {
 
 .sql {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
   grid-template-columns: minmax(0, 1fr);
 }
 
 @media (min-width: 64rem) {
   .sql {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
   }
+}
+
+.sql-label {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
 }
 
 .sql-tables {
@@ -480,47 +486,109 @@ body {
   content: none;
 }
 
-.sql-table {
-  /* Contains its visually-hidden label, which would otherwise escape the
-     schema's horizontal scroller and widen the whole page. */
+.sql-card {
+  /* Contains its visually-hidden label, which would otherwise escape a
+     scroll container and widen the page. */
   position: relative;
-  display: block;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
   width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
+  height: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
   color: var(--muted);
   font: inherit;
   font-size: var(--text-xs);
   text-align: left;
   cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-out);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
-.sql-table pre {
-  margin: 0;
-  overflow-x: auto;
-  line-height: 1.25;
-}
-
-.sql-table:disabled {
+.sql-card:disabled {
+  opacity: 1;
   cursor: default;
 }
 
-.sql-table[data-related="true"] {
+.sql-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--border);
+}
+
+.sql-card-name {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.sql-card-cols {
+  display: grid;
+  gap: 2px;
+}
+
+.sql-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, auto);
+  gap: var(--space-2);
+}
+
+.sql-col-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sql-col-tag {
+  min-width: 2ch;
+  color: var(--accent);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sql-card-desc {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.sql-card[data-related="true"] {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
   color: var(--fg);
 }
 
-.sql-table[data-active="true"],
-.sql-table:not(:disabled):hover,
-.sql-table:focus-visible {
+.sql-card[data-active="true"],
+.sql-card:not(:disabled):hover,
+.sql-card:focus-visible {
+  border-color: var(--accent);
+  color: var(--fg);
+  transform: translateY(-1px);
+}
+
+.sql-card[data-active="true"] .sql-card-name {
   color: var(--accent);
 }
 
-.sql-table-desc {
-  margin: var(--space-1) 0 0;
-  color: var(--muted);
-  font-size: var(--text-xs);
+/* Narrow screens: the schema becomes a swipeable row of cards. */
+@media (max-width: 40rem) {
+  .sql-tables {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: minmax(13rem, 80%);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-bottom: var(--space-2);
+  }
+
+  .sql-table-item {
+    scroll-snap-align: start;
+  }
 }
 
 .sql-console {
@@ -552,13 +620,7 @@ body {
 .sql-chip[aria-checked="true"],
 .sql-chip[aria-selected="true"],
 .sql-chip:not(:disabled):hover,
-.sql-run:not(:disabled):hover,
 .sql-reset:not(:disabled):hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.sql-run {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -568,12 +630,35 @@ button:disabled {
   cursor: default;
 }
 
-.sql-editor {
-  width: 100%;
-  padding: var(--space-3);
+.sql-editor-wrap {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+  transition: border-color var(--duration-base) var(--ease-out);
+}
+
+.sql-editor-wrap:focus-within,
+.sql-editor-wrap[data-pending="true"] {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.sql-editor-prompt {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.sql-editor {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) 9ch;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
   color: var(--fg);
   font: inherit;
   font-size: var(--text-sm);
@@ -583,8 +668,7 @@ button:disabled {
 }
 
 .sql-editor:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 0;
+  outline: none;
 }
 
 .sql-actions {
@@ -592,6 +676,72 @@ button:disabled {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+}
+
+.sql-run {
+  position: relative;
+  padding-inline: var(--space-4);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.sql-run:not(:disabled):hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.sql-kbd {
+  opacity: 0.7;
+  font-weight: normal;
+}
+
+/* A query is loaded but not run yet: invite the click. */
+.sql-run[data-pending="true"]:not(:disabled) {
+  animation: sql-glow 1.4s var(--ease-in-out) infinite;
+}
+
+/* Running: a light sweep across the button. */
+.sql-run[aria-busy="true"] {
+  overflow: hidden;
+  opacity: 1;
+}
+
+.sql-run[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 35%, transparent),
+    transparent
+  );
+  animation: sql-sweep 0.9s linear infinite;
+}
+
+@keyframes sql-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent),
+      0 0 18px 2px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+}
+
+@keyframes sql-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .sql-status {
@@ -612,39 +762,55 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+  animation: sql-reveal var(--duration-base) var(--ease-out);
 }
 
-.sql-result pre {
-  margin: 0;
-  padding: var(--space-3);
+.sql-result table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: var(--text-xs);
-  /* Tight enough that box-drawing verticals join up between rows. */
-  line-height: 1.25;
 }
 
-/* On narrow screens the schema becomes a swipeable row of tables. */
-@media (max-width: 40rem) {
-  .sql-tables {
-    grid-auto-flow: column;
-    grid-template-columns: none;
-    grid-auto-columns: minmax(16rem, 85%);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    padding-bottom: var(--space-2);
-  }
-
-  .sql-table-item {
-    scroll-snap-align: start;
-  }
+.sql-result th,
+.sql-result td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
 }
 
-/* Browsers default <pre>/<code> to their own monospace; use ours. */
-pre,
-code,
-kbd,
-samp {
-  font-family: var(--font-mono);
+.sql-result th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 600;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.sql-result td[data-numeric="true"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sql-result td[data-null="true"] {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.sql-result tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.sql-result tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+@keyframes sql-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 /* ML laboratory ---------------------------------------------------------- */
@@ -1113,13 +1279,23 @@ samp {
 /* Hero ------------------------------------------------------------------- */
 
 .hero-art-wrap {
-  margin-top: var(--space-8);
+  max-width: 60rem;
   overflow-x: auto;
 }
 
 .hero-art {
   border: 0;
   cursor: crosshair;
+}
+
+.hero-role {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-lg);
+}
+
+.site-main .tagline {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
 }
 
 /* In-page jumps land below the sticky header (taller when it wraps on
@@ -1133,4 +1309,33 @@ section[id] {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
+}
+
+.hero-role .terminal-cursor {
+  font-size: inherit;
+  margin-left: 0.25ch;
+}
+
+/* Ambient backdrop -------------------------------------------------------- */
+
+.ambient-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  font-family: var(--font-mono);
+}
+
+/* Page content sits above the backdrop; panels are opaque, so the field
+   only shows through the blank areas around them. */
+.site-main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.theme-toggle {
+  white-space: nowrap;
 }
