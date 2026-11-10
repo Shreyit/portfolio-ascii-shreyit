@@ -31,7 +31,11 @@ export function measureFont(fontFamily: string): Promise<FontMetrics> {
 
 async function measure(fontFamily: string): Promise<FontMetrics> {
   const font = `${PROBE_PX}px ${fontFamily}`;
-  await document.fonts.load(font);
+  // fonts.load rejects if any face in the stack fails — e.g. next/font's
+  // metric-matched fallback points at local("Arial"), absent on many Linux
+  // systems. That must not stop rendering: wait for whatever did load and
+  // measure with the font the browser actually resolved.
+  await document.fonts.load(font).catch(() => document.fonts.ready);
 
   const ctx = document.createElement("canvas").getContext("2d");
   if (!ctx) {
