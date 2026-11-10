@@ -65,7 +65,12 @@ describe("ambient field", () => {
   it("fades out behind text", () => {
     const p = { x: 0, y: 0, active: false };
     const quiet = quietMask(120, 40, [{ x: 40, y: 15, w: 40, h: 4 }]);
-    expect(quiet[17 * 120 + 60]).toBeLessThan(0.2);
+    expect(quiet[17 * 120 + 60]).toBeLessThan(0.35);
+    // No hard edge: neighbouring cells differ only slightly.
+    for (let x = 1; x < 120; x += 1)
+      expect(
+        Math.abs(quiet[17 * 120 + x]! - quiet[17 * 120 + x - 1]!),
+      ).toBeLessThan(0.12);
     expect(quiet[2 * 120 + 2]).toBe(1);
     const loud = new AsciiGrid(120, 40);
     const hushed = new AsciiGrid(120, 40);

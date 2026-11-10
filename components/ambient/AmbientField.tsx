@@ -50,7 +50,7 @@ export default function AmbientField() {
     type Box = { x: number; y: number; w: number; h: number; fixed?: boolean };
     let pageBoxes: Box[] = [];
     let doc = 0;
-    let heroBox: (Box & { floor: number; soft: number }) | null = null;
+    let heroBox: (Box & { floor: number }) | null = null;
     let lastScan = -Infinity;
     const pointer: PointerInput = { x: 0, y: 0, active: false };
     const target: PointerInput = { x: 0, y: 0, active: false };
@@ -138,8 +138,7 @@ export default function AmbientField() {
                 y: (hero.top + y) / CELL_H,
                 w: hero.width / CELL_W,
                 h: hero.height / CELL_H,
-                floor: 0.12,
-                soft: 2,
+                floor: 0.08,
               }
             : null;
         }

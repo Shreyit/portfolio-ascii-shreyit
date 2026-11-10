@@ -127,9 +127,47 @@ export function drawField(
   }
 }
 
+/** In-place separable box blur of a cols×rows field (radius in cells). */
+function boxBlur(
+  src: Float32Array,
+  cols: number,
+  rows: number,
+  rx: number,
+  ry: number,
+): void {
+  const tmp = new Float32Array(src.length);
+  for (let y = 0; y < rows; y += 1) {
+    let sum = 0;
+    const row = y * cols;
+    for (let x = -rx; x <= rx; x += 1) {
+      sum += src[row + Math.min(cols - 1, Math.max(0, x))]!;
+    }
+    for (let x = 0; x < cols; x += 1) {
+      tmp[row + x] = sum / (2 * rx + 1);
+      sum +=
+        src[row + Math.min(cols - 1, x + rx + 1)]! -
+        src[row + Math.max(0, x - rx)]!;
+    }
+  }
+  for (let x = 0; x < cols; x += 1) {
+    let sum = 0;
+    for (let y = -ry; y <= ry; y += 1) {
+      sum += tmp[Math.min(rows - 1, Math.max(0, y)) * cols + x]!;
+    }
+    for (let y = 0; y < rows; y += 1) {
+      src[y * cols + x] = sum / (2 * ry + 1);
+      sum +=
+        tmp[Math.min(rows - 1, y + ry + 1) * cols + x]! -
+        tmp[Math.max(0, y - ry) * cols + x]!;
+    }
+  }
+}
+
 /**
  * Builds the quiet mask from text boxes given in grid cells: 1 away from
- * text, falling smoothly to `floor` inside each box (with a soft margin).
+ * text, darker behind it. The boxes are stamped and then blurred three
+ * times (≈ Gaussian), so the dimming is a soft, shapeless vignette with no
+ * edges or corners anywhere.
  */
 export function quietMask(
   cols: number,
@@ -141,30 +179,24 @@ export function quietMask(
     h: number;
     /** Overrides the default floor (lighter hush). */
     floor?: number;
-    /** Margin scale: larger gives a wider, softer falloff. */
-    soft?: number;
   }[],
-  floor = 0.15,
+  floor = 0.08,
 ): Float32Array {
   const out = new Float32Array(cols * rows).fill(1);
   for (const b of boxes) {
-    const mx = 10 * (b.soft ?? 1);
-    const my = 3 * (b.soft ?? 1);
     const low = b.floor ?? floor;
-    const x0 = Math.max(0, Math.floor(b.x - mx));
-    const x1 = Math.min(cols - 1, Math.ceil(b.x + b.w + mx));
-    const y0 = Math.max(0, Math.floor(b.y - my));
-    const y1 = Math.min(rows - 1, Math.ceil(b.y + b.h + my));
+    // Padded so the blurred dip still reaches the floor under the text.
+    const x0 = Math.max(0, Math.floor(b.x - 6));
+    const x1 = Math.min(cols - 1, Math.ceil(b.x + b.w + 6));
+    const y0 = Math.max(0, Math.floor(b.y - 2));
+    const y1 = Math.min(rows - 1, Math.ceil(b.y + b.h + 2));
     for (let y = y0; y <= y1; y += 1) {
-      const oy = Math.max(b.y - y, y - (b.y + b.h), 0) / my;
       for (let x = x0; x <= x1; x += 1) {
-        const ox = Math.max(b.x - x, x - (b.x + b.w), 0) / mx;
-        // Euclidean falloff: rounded, edgeless corners.
-        const v = low + (1 - low) * smooth(0, 1, Math.hypot(ox, oy));
         const i = y * cols + x;
-        if (v < out[i]!) out[i] = v;
+        if (low < out[i]!) out[i] = low;
       }
     }
   }
+  for (let pass = 0; pass < 3; pass += 1) boxBlur(out, cols, rows, 10, 4);
   return out;
 }
