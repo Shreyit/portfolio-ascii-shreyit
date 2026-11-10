@@ -241,13 +241,15 @@ function Lines({
           : line.map((segment, j) => {
               const className = segment.tone ? `t-${segment.tone}` : undefined;
               if (segment.href) {
+                const samePage = segment.href.startsWith("#");
                 return (
                   <a
                     key={j}
                     className="t-link"
                     href={segment.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    {...(samePage
+                      ? {}
+                      : { target: "_blank", rel: "noopener noreferrer" })}
                   >
                     {segment.text}
                   </a>

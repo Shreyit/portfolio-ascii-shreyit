@@ -258,14 +258,22 @@ function labLines(key: ExperienceKey, data: TerminalData): Line[] {
   const projects = data.projects.filter((p) => p.experience === key);
   const experience = data.experience.filter((x) => x.experience === key);
   const research = key === "research-explorer" ? data.research : [];
+  const introLine: Line =
+    key === "sql"
+      ? [link("open the SQL playground ↓", "#sql-heading")]
+      : key === "ml-lab"
+        ? [link("open the ML laboratory ↓", "#ml-heading")]
+        : key === "infra"
+          ? [link("open the infrastructure simulator ↓", "#infra-heading")]
+          : [
+              seg(
+                "interactive lab in development — here is what it draws on:",
+                "muted",
+              ),
+            ];
   const lines: Line[] = [
     [seg(`[ ${LAB_TITLES[key]} ]`, "accent")],
-    [
-      seg(
-        "interactive lab in development — here is what it draws on:",
-        "muted",
-      ),
-    ],
+    introLine,
     blank,
   ];
   if (skills.length) {

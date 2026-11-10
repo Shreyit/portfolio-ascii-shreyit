@@ -1,7 +1,7 @@
 export interface Palette {
   bg: string;
-  // Index 0=fg, 1=muted, 2=accent, 3=border (bg used for clearing)
-  colors: [string, string, string, string];
+  // Index 0=fg, 1=muted, 2=accent, 3=border, 4=error (bg used for clearing)
+  colors: [string, string, string, string, string];
 }
 
 export function readPalette(element: Element): Palette {
@@ -9,7 +9,13 @@ export function readPalette(element: Element): Palette {
   const read = (name: string) => styles.getPropertyValue(name).trim();
   return {
     bg: read("--bg"),
-    colors: [read("--fg"), read("--muted"), read("--accent"), read("--border")],
+    colors: [
+      read("--fg"),
+      read("--muted"),
+      read("--accent"),
+      read("--border"),
+      read("--error"),
+    ],
   };
 }
 

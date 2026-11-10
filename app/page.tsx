@@ -1,4 +1,5 @@
 import { HeroHeading } from "@/components/HeroHeading";
+import { InfraSection } from "@/components/infra/InfraSection";
 import { MlSection } from "@/components/ml/MlSection";
 import { SqlSection } from "@/components/sql/SqlSection";
 import { Terminal } from "@/components/terminal/Terminal";
@@ -63,6 +64,8 @@ export default function Home() {
       <SqlSection data={terminalData} />
 
       <MlSection />
+
+      <InfraSection />
 
       <section className="content-section" aria-labelledby="projects-heading">
         <h2 id="projects-heading">Projects</h2>

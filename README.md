@@ -110,6 +110,34 @@ to the client than `TerminalData` (full content minus `needsReview` entries).
   auto-scrolls the log only (never the page). Lines whose first segment is the
   bullet marker `"  - "` get `.terminal-line--bullet` (hanging indent).
 
+## SQL playground
+
+`components/sql/` runs SQLite (via sql.js / WebAssembly) in a Web Worker, so a
+runaway query (e.g. an infinite recursive CTE) can be terminated by the page after
+a 3-second timeout — the client then boots a fresh database from the seed instead of
+freezing. The wasm binary is served from our own origin: `scripts/copy-sqljs.mjs`
+copies `sql.js/dist/sql-wasm-browser.wasm` to `public/vendor/` on `postinstall`
+(`public/vendor/` is gitignored). Tables are seeded **only from public (reviewed)
+content** — `seed(data: TerminalData)` in `components/sql/schema.ts` — never from the
+private Safewater Lines data or resume contact details. `SqlIsland.tsx`
+is a lazily-loaded island (shared `useLoadWhenVisible` hook — loads at 15% visibility
+or on pointer/focus) that swaps in the interactive playground over the server-rendered
+static view; the query log caps rows at 200 (`MAX_ROWS`).
+
+## ML laboratory
+
+`components/ml/` recreates the Rinn microcredit study interactively. All numbers come
+from `content/rinn-lab.ts`, transcribed verbatim from the saved outputs of
+`notebooks/01_section_III_submission.ipynb` in the public repo
+`github.com/Shreyit/rinn-microcredit-risk` (cell numbers are noted in the file);
+nothing is re-computed or estimated. The data are synthetic (seeded generator), as the
+repo states, and per-loan probabilities were never saved — which is why the lab offers
+only the thresholds the study actually evaluated (0.5 and 0.3) instead of a continuous
+threshold slider. `ml.test.ts` asserts that every model's metrics are consistent with
+its confusion matrix and that the threshold results match the resume's claim. The lab
+is a lazily-loaded island with a server-rendered static view, ASCII sweep chart, and
+tabs for the model arena / decision threshold / fit view.
+
 ## Testing
 
 Unit tests (Vitest, `pnpm test`) cover the content layer (zod parse, allowlist, privacy
@@ -158,6 +186,8 @@ app/                  # App Router root: layout.tsx, page.tsx, globals.css
 components/           # UI components (HeroHeading, ThemeToggle) + unit tests
 components/ascii/     # ASCII engine (see above) + AsciiCanvas wrapper
 components/terminal/  # Interactive terminal (see above)
+components/sql/       # SQLite playground (sql.js worker; see above)
+components/ml/        # ML laboratory (Rinn study; see above)
 content/              # Typed, validated content layer (see above)
 lib/motion/           # Central animation lifecycle:
   gsap-setup.ts       #   registers ScrollTrigger once (client only)

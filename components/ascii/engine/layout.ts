@@ -30,9 +30,8 @@ export interface CellLayout {
 }
 
 /**
- * Fits a cols x rows grid exactly into the given box. The font is sized from
- * the cell width, then shrunk if needed so the tallest glyph extents still
- * fit the cell height — glyphs are never clipped.
+ * Fits a cols x rows grid exactly into the given box, sizing the font from
+ * the cell width.
  */
 export function computeLayout(input: LayoutInput): CellLayout | null {
   const { cssWidth, cssHeight, cols, rows, font } = input;
@@ -46,11 +45,12 @@ export function computeLayout(input: LayoutInput): CellLayout | null {
   const cellWidth = canvasWidth / cols;
   const cellHeight = canvasHeight / rows;
 
+  // Like a terminal: the font fills the cell width exactly, so box-drawing
+  // and block characters join up across cells. Glyphs are centred
+  // vertically; the extreme tips of the tallest ones may be trimmed at the
+  // cell edge rather than shrinking every glyph (which leaves gaps).
   const glyphExtent = font.ascent + font.descent;
-  const fontPx = Math.min(
-    cellWidth / font.advance,
-    glyphExtent > 0 ? cellHeight / glyphExtent : Infinity,
-  );
+  const fontPx = cellWidth / font.advance;
 
   const baseline =
     (cellHeight - glyphExtent * fontPx) / 2 + font.ascent * fontPx;

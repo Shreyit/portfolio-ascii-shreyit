@@ -833,3 +833,82 @@ samp {
 .ml-metric[data-baseline="true"] .ml-meter {
   --fill: var(--error);
 }
+
+/* Infrastructure simulator ----------------------------------------------- */
+
+.infra {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 64rem) {
+  .infra {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+.infra-view {
+  min-width: 0;
+}
+
+.infra-pre {
+  margin: 0;
+  padding: var(--space-3);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: clamp(0.5rem, 1.1vw, 0.8rem);
+  line-height: 1.2;
+}
+
+.infra-panel,
+.infra-controls {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.infra-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.infra-stats div {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.infra-stats dt {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.infra-stats dd {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.infra-log-title {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: normal;
+}
+
+.infra-log {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  min-height: 8lh;
+  list-style: none;
+  font-size: var(--text-xs);
+}
+
+.infra-log li::before {
+  content: none;
+}

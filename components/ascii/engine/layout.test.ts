@@ -35,7 +35,7 @@ describe("computeLayout", () => {
     expect(layout.canvasWidth).toBe(200);
   });
 
-  it("shrinks the font so the tallest glyphs fit the cell", () => {
+  it("fills the cell width and centres glyphs vertically", () => {
     const layout = computeLayout({
       cssWidth: 600,
       cssHeight: 120,
@@ -45,11 +45,12 @@ describe("computeLayout", () => {
       maxDpr: 2,
       font,
     })!;
+    // Adjacent glyph advances touch: box-drawing lines connect.
+    expect(font.advance * layout.fontPx).toBeCloseTo(layout.cellWidth);
+    expect(layout.glyphOffsetX).toBeCloseTo(0);
     const top = layout.baseline - font.ascent * layout.fontPx;
     const bottom = layout.baseline + font.descent * layout.fontPx;
-    expect(top).toBeGreaterThanOrEqual(-1e-9);
-    expect(bottom).toBeLessThanOrEqual(layout.cellHeight + 1e-9);
-    expect(font.advance * layout.fontPx).toBeLessThanOrEqual(layout.cellWidth);
+    expect((top + bottom) / 2).toBeCloseTo(layout.cellHeight / 2);
   });
 
   it("returns null for an empty box", () => {

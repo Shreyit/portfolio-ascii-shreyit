@@ -7,6 +7,7 @@ import {
   type ComponentType,
   type ReactNode,
 } from "react";
+import { useLoadWhenVisible } from "@/lib/use-load-when-visible";
 import type { Statement } from "./schema";
 
 interface PlaygroundProps {
@@ -20,45 +21,23 @@ interface SqlIslandProps extends PlaygroundProps {
   children: ReactNode;
 }
 
-/**
- * Loads the interactive playground only when it nears the viewport or the
- * visitor reaches for it, keeping it off the first-load bundle.
- */
+/** Loads the interactive playground only when it nears the viewport or the visitor reaches for it, keeping it off the first-load bundle. */
 export function SqlIsland({ children, ...props }: SqlIslandProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const visible = useLoadWhenVisible(ref, 0.15);
   const [Playground, setPlayground] =
     useState<ComponentType<PlaygroundProps> | null>(null);
 
   useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+    if (!visible) return;
     let cancelled = false;
-    const load = () => {
-      observer.disconnect();
-      element.removeEventListener("pointerenter", load);
-      element.removeEventListener("focusin", load);
-      void import("./SqlPlayground").then((mod) => {
-        if (!cancelled) setPlayground(() => mod.default);
-      });
-    };
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) load();
-      },
-      // Load once the playground is genuinely on screen (or the visitor
-      // reaches for it) — not merely near the fold on first paint.
-      { threshold: 0.15 },
-    );
-    observer.observe(element);
-    element.addEventListener("pointerenter", load);
-    element.addEventListener("focusin", load);
+    void import("./SqlPlayground").then((mod) => {
+      if (!cancelled) setPlayground(() => mod.default);
+    });
     return () => {
       cancelled = true;
-      observer.disconnect();
-      element.removeEventListener("pointerenter", load);
-      element.removeEventListener("focusin", load);
     };
-  }, []);
+  }, [visible]);
 
   return (
     <div ref={ref} data-sql-ready={Playground ? "true" : "false"}>

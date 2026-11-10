@@ -106,6 +106,11 @@ describe("commands", () => {
     );
   });
 
+  it("sql and ml commands link to their on-page sections", () => {
+    expect(allLinks(run("sql").lines)).toContain("#sql-heading");
+    expect(allLinks(run("ml").lines)).toContain("#ml-heading");
+  });
+
   it("open shows only public links", () => {
     const sankhya = allLinks(run("open sankhya").lines);
     expect(sankhya).toEqual(["https://sankhya-timeline.vercel.app"]);
