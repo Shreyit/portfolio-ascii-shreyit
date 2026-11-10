@@ -1,0 +1,176 @@
+[
+  {
+    "name": "blitz_landing",
+    "url": "https://github.com/Shreyit/blitz_landing",
+    "description": "Interactive website for Bachelor’s BLITZ at TISS Mumbai, featuring sports rules, player and volunteer registration, team rosters, and a live auction dashboard.",
+    "homepage": "https://blitz-landing-theta.vercel.app",
+    "languages": {
+      "CSS": 133994,
+      "JavaScript": 174507,
+      "PLpgSQL": 63615,
+      "Python": 68902,
+      "TypeScript": 412936
+    },
+    "topics": [
+      "fastapi",
+      "nextjs",
+      "pgsql",
+      "react",
+      "supabase",
+      "supabase-database",
+      "supabase-functions",
+      "supabase-storage",
+      "typescript"
+    ],
+    "stars": 0,
+    "pushedAt": "2026-11-05T12:53:43Z"
+  },
+  {
+    "name": "brsr_tool",
+    "url": "https://github.com/Shreyit/brsr_tool",
+    "description": null,
+    "homepage": null,
+    "languages": {
+      "Jupyter Notebook": 644127,
+      "Python": 35503
+    },
+    "topics": [],
+    "stars": 0,
+    "pushedAt": "2026-10-13T21:38:44Z"
+  },
+  {
+    "name": "cdp_analysis",
+    "url": "https://github.com/Shreyit/cdp_analysis",
+    "description": null,
+    "homepage": null,
+    "languages": {
+      "Jupyter Notebook": 425210,
+      "Python": 118501
+    },
+    "topics": [],
+    "stars": 0,
+    "pushedAt": "2026-08-04T12:33:27Z"
+  },
+  {
+    "name": "dashboard_vulnarbility_tourism",
+    "url": "https://github.com/Shreyit/dashboard_vulnarbility_tourism",
+    "description": null,
+    "homepage": "https://dashboard-vulnarbility-tourism.vercel.app",
+    "languages": {
+      "CSS": 67515,
+      "HTML": 1722,
+      "Jupyter Notebook": 186754,
+      "Python": 121657,
+      "TypeScript": 286021
+    },
+    "topics": [],
+    "stars": 1,
+    "pushedAt": "2026-10-21T13:04:24Z"
+  },
+  {
+    "name": "DataCo-Market-Dashboard",
+    "url": "https://github.com/Shreyit/DataCo-Market-Dashboard",
+    "description": "An interactive Power BI dashboard analyzing global supply chain logistics and profitability for DataCo Operations.",
+    "homepage": null,
+    "languages": {},
+    "topics": [
+      "dax-expression",
+      "kaggle",
+      "powerbi"
+    ],
+    "stars": 0,
+    "pushedAt": "2026-03-20T15:38:22Z"
+  },
+  {
+    "name": "emission-analysis-dashboard",
+    "url": "https://github.com/Shreyit/emission-analysis-dashboard",
+    "description": "A full-stack data visualization dashboard for CO₂ emissions analysis of Egypt, built with Flask, Plotly.js, and Pandas. Features real-time AI context, animated timelines, and data from the World Bank & UNDP. 🌱",
+    "homepage": "https://emission-analysis-dashboard.vercel.app",
+    "languages": {
+      "HTML": 163135,
+      "Jupyter Notebook": 40370,
+      "Python": 36833
+    },
+    "topics": [
+      "emissions-co2",
+      "flask",
+      "numpy",
+      "owid",
+      "pandas",
+      "plotlyjs",
+      "python"
+    ],
+    "stars": 0,
+    "pushedAt": "2026-04-07T13:04:12Z"
+  },
+  {
+    "name": "my-neovim-ds-config",
+    "url": "https://github.com/Shreyit/my-neovim-ds-config",
+    "description": "Neovim configuration optimized for data science and analytics",
+    "homepage": null,
+    "languages": {
+      "Lua": 52005
+    },
+    "topics": [
+      "neovim",
+      "neovim-config",
+      "neovim-lua",
+      "neovim-plugins",
+      "vim",
+      "vim-plugins"
+    ],
+    "stars": 1,
+    "pushedAt": "2026-02-08T22:47:32Z"
+  },
+  {
+    "name": "peoples_analytics_safewaterlines",
+    "url": "https://github.com/Shreyit/peoples_analytics_safewaterlines",
+    "description": null,
+    "homepage": null,
+    "languages": {
+      "AppleScript": 1018,
+      "CSS": 2833,
+      "Dockerfile": 647,
+      "HTML": 172587,
+      "JavaScript": 23230,
+      "Jupyter Notebook": 2164494,
+      "Python": 181994
+    },
+    "topics": [],
+    "stars": 0,
+    "pushedAt": "2026-11-02T08:39:37Z"
+  },
+  {
+    "name": "rinn-microcredit-risk",
+    "url": "https://github.com/Shreyit/rinn-microcredit-risk",
+    "description": null,
+    "homepage": null,
+    "languages": {
+      "Jupyter Notebook": 673627,
+      "Makefile": 1062,
+      "Python": 2995,
+      "TeX": 39807
+    },
+    "topics": [],
+    "stars": 0,
+    "pushedAt": "2026-10-26T12:15:39Z"
+  },
+  {
+    "name": "SDG-Streamlit-Interactive-Dashboard",
+    "url": "https://github.com/Shreyit/SDG-Streamlit-Interactive-Dashboard",
+    "description": "An interactive SDG dashboard created using streamlit (an open-source Python library) and compare India with South Asian and South East Asian Countries , for SDG 2, 3 and 6",
+    "homepage": null,
+    "languages": {
+      "Python": 48769
+    },
+    "topics": [
+      "dashboard",
+      "python",
+      "streamlit",
+      "streamlit-dashboard",
+      "unsdg"
+    ],
+    "stars": 0,
+    "pushedAt": "2026-06-03T19:48:24Z"
+  }
+]
