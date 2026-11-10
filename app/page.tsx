@@ -1,6 +1,7 @@
 import { HeroHeading } from "@/components/HeroHeading";
 import { InfraSection } from "@/components/infra/InfraSection";
 import { MlSection } from "@/components/ml/MlSection";
+import { ResearchSection } from "@/components/research/ResearchSection";
 import { SqlSection } from "@/components/sql/SqlSection";
 import { Terminal } from "@/components/terminal/Terminal";
 import { runCommand } from "@/components/terminal/commands";
@@ -61,6 +62,8 @@ export default function Home() {
 
       <Terminal data={terminalData} intro={intro} />
 
+      <ResearchSection />
+
       <SqlSection data={terminalData} />
 
       <MlSection />
@@ -97,15 +100,6 @@ export default function Home() {
             </div>
           );
         })}
-      </section>
-
-      <section className="content-section" aria-labelledby="research-heading">
-        <h2 id="research-heading">Research &amp; fieldwork</h2>
-        <ul>
-          {research.map((entry) => (
-            <li key={entry.slug}>{entry.title}</li>
-          ))}
-        </ul>
       </section>
 
       <section className="content-section" aria-labelledby="activities-heading">
