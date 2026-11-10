@@ -20,7 +20,10 @@ export function LabPanel({
   children,
 }: LabPanelProps) {
   return (
-    <section className={`lab-section ${styles.panel}`} aria-labelledby={id}>
+    <section
+      className={`lab-section spot ${styles.panel}`}
+      aria-labelledby={id}
+    >
       <div className={styles.bar} aria-hidden="true">
         <span className={styles.dot} />
         <span className={styles.dot} />

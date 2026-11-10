@@ -8,7 +8,7 @@ import { NAME_COLS, NAME_ROWS, createNameScene } from "./name";
 export default function HeroCanvas() {
   const scene = useRef<ReturnType<typeof createNameScene> | null>(null);
   const factory = useCallback(() => {
-    scene.current = createNameScene();
+    scene.current = createNameScene({ intro: true });
     return scene.current;
   }, []);
 

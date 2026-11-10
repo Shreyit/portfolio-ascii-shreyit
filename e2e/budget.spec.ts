@@ -9,9 +9,9 @@ import { join } from "node:path";
 //   own, gsap/lenis ≈28 KB, plus a little headroom.
 // - Total: everything loaded by network idle, including deferred
 //   enhancements (the hero animation starts after load, when the browser is
-//   idle). Lazy labs below the fold load only when scrolled to and are not
-//   counted here.
-const TOTAL_BUDGET_KB = 190;
+//   idle, and the scroll-motion layer with ScrollTrigger ≈20 KB). Lazy labs
+//   below the fold load only when scrolled to and are not counted here.
+const TOTAL_BUDGET_KB = 210;
 const TARGETS = [
   // The visitor-facing page.
   { path: "/", criticalKb: 170 },

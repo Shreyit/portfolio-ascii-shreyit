@@ -128,7 +128,7 @@ export class CanvasRenderer {
       } else {
         ctx.font = `${layout.fontPx}px ${this.fontFamily}`;
         ctx.textBaseline = "alphabetic";
-        ctx.fillStyle = palette.colors[color] ?? palette.colors[0];
+        ctx.fillStyle = palette.colors[color] ?? palette.colors[0] ?? "#888";
         ctx.fillText(
           String.fromCharCode(code),
           dx + layout.glyphOffsetX,

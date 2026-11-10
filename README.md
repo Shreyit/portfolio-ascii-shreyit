@@ -167,6 +167,25 @@ explorations. Its data lives in `content/research-lab.ts` and is restricted to
 means and respondent counts, with the unmeasured Workers × Environmental cell shown as
 missing (no survey question was asked about it). Sources are cited per block in the file.
 
+## Journey map
+
+`components/map/` draws India in characters from the
+[DataMeet India state boundaries](https://github.com/datameet/maps) shapefile
+(CC BY 4.0, credited on the page). `scripts/build-india-map.mjs` parses the
+`.shp`/`.dbf` directly, simplifies rings with Douglas-Peucker and writes
+`content/generated/india-map.json` (~52 KB, loaded only with the map island).
+The raw shapefile lives in gitignored `data/raw/`; the script header has the
+download command. Places come from existing content (education, research,
+experience) plus city-centre coordinates; flows are curved Bézier arcs with
+travelling comets. Legend buttons are the accessible interface.
+
+## Hero name
+
+`scripts/build-name-mask.mjs` renders the name in a heavy face with headless
+Chromium and samples per-cell ink coverage into
+`content/generated/name-mask.json`. Edges are drawn with light glyphs, bodies
+with dense cycling ones, coloured along the `--spectrum-*` palette.
+
 ## Testing
 
 Unit tests (Vitest, `pnpm test`) cover the content layer (zod parse, allowlist, privacy

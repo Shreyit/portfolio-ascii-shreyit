@@ -1,6 +1,9 @@
+import { ActivityList } from "@/components/ActivityList";
 import { HeroHeading } from "@/components/HeroHeading";
+import { ProjectGrid } from "@/components/ProjectGrid";
 import { HeroArt } from "@/components/hero/HeroArt";
 import { InfraSection } from "@/components/infra/InfraSection";
+import { MapSection } from "@/components/map/MapSection";
 import { MlSection } from "@/components/ml/MlSection";
 import { ResearchSection } from "@/components/research/ResearchSection";
 import { SqlSection } from "@/components/sql/SqlSection";
@@ -8,26 +11,15 @@ import { Terminal } from "@/components/terminal/Terminal";
 import { runCommand } from "@/components/terminal/commands";
 import type { TerminalData } from "@/components/terminal/types";
 import {
-  PILLARS,
   certifications,
   education,
   experience,
   extracurriculars,
   profile,
   projects,
-  projectsByPillar,
   research,
   skills,
 } from "@/content";
-import type { Pillar } from "@/content/schema";
-
-const PILLAR_LABELS: Record<Pillar, string> = {
-  engineering: "Engineering",
-  ai: "AI",
-  "data-science": "Data Science",
-  research: "Research",
-  sustainability: "Sustainability",
-};
 
 // Public (reviewed) content only — this is serialised into the page.
 const terminalData: TerminalData = {
@@ -66,6 +58,8 @@ export default function Home() {
 
       <ResearchSection />
 
+      <MapSection />
+
       <SqlSection data={terminalData} />
 
       <MlSection />
@@ -74,51 +68,12 @@ export default function Home() {
 
       <section className="content-section" aria-labelledby="projects-heading">
         <h2 id="projects-heading">Projects</h2>
-        {PILLARS.filter((pillar) => pillar !== "research").map((pillar) => {
-          const pillarProjects = projectsByPillar(pillar);
-          if (pillarProjects.length === 0) {
-            return null;
-          }
-          return (
-            <div key={pillar}>
-              <h3>{PILLAR_LABELS[pillar]}</h3>
-              <ul>
-                {pillarProjects.map((project) => (
-                  <li key={project.slug}>
-                    {project.links.repo ? (
-                      <a href={project.links.repo}>{project.title}</a>
-                    ) : (
-                      project.title
-                    )}
-                    {project.links.live ? (
-                      <>
-                        {" "}
-                        (<a href={project.links.live}>live</a>)
-                      </>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
+        <ProjectGrid projects={projects} />
       </section>
 
       <section className="content-section" aria-labelledby="activities-heading">
         <h2 id="activities-heading">Leadership &amp; activities</h2>
-        <ul>
-          {extracurriculars.map((entry) => (
-            <li key={entry.slug}>
-              <span>{entry.role}</span> — <span>{entry.organisation}</span>
-              {entry.links?.live ? (
-                <>
-                  {" "}
-                  (<a href={entry.links.live}>live</a>)
-                </>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        <ActivityList entries={extracurriculars} />
       </section>
     </>
   );

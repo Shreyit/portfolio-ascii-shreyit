@@ -3,6 +3,7 @@ import { JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SectionNav } from "@/components/SectionNav";
+import { EffectsIsland } from "@/lib/motion/EffectsIsland";
 import { ContactLinks } from "@/components/ContactLinks";
 import { AmbientIsland } from "@/components/ambient/AmbientIsland";
 import styles from "@/components/SectionNav.module.css";
@@ -63,6 +64,7 @@ export default function RootLayout({
             <SectionNav />
             <ThemeToggle />
           </header>
+          <EffectsIsland />
           <main id="main" className="site-main">
             {children}
           </main>

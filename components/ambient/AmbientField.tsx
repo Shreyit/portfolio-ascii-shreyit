@@ -8,8 +8,8 @@ import type { PointerInput } from "@/components/ascii/engine/scene";
 import { drawField } from "./field";
 
 // Target cell size in CSS px (the font follows from it).
-const CELL_W = 11;
-const CELL_H = 22;
+const CELL_W = 7;
+const CELL_H = 15;
 
 /**
  * Full-viewport ASCII backdrop behind the page. Fixed, non-interactive
@@ -29,6 +29,7 @@ export default function AmbientField() {
     let renderer: CanvasRenderer | null = null;
     let grid: AsciiGrid | null = null;
     let fade = 0;
+    const heroEl = document.querySelector(".hero-art");
     const pointer: PointerInput = { x: 0, y: 0, active: false };
     const target: PointerInput = { x: 0, y: 0, active: false };
 
@@ -75,7 +76,25 @@ export default function AmbientField() {
         pointer.x += (target.x - pointer.x) * (pointer.active ? k * 2 : 1);
         pointer.y += (target.y - pointer.y) * (pointer.active ? k * 2 : 1);
         pointer.active = target.active;
-        drawField(grid, timeMs / 1000, pointer, fade);
+        // Full strength over the hero, calmer behind the reading sections.
+        const scrolled = window.scrollY / window.innerHeight;
+        const intensity = 1 - 0.6 * Math.min(1, Math.max(0, scrolled - 0.2));
+        // Keep the field quiet behind the hero name so it stays legible.
+        const hero = heroEl?.getBoundingClientRect();
+        const calm =
+          hero && hero.bottom > 0
+            ? {
+                x: hero.left / CELL_W,
+                y: hero.top / CELL_H,
+                w: hero.width / CELL_W,
+                h: hero.height / CELL_H,
+              }
+            : null;
+        drawField(grid, timeMs / 1000, pointer, fade, {
+          intensity,
+          scroll: window.scrollY / CELL_H,
+          calm,
+        });
         renderer.render();
         // A soft accent halo under the revealed glyphs follows the same point.
         glow.style.opacity = fade.toFixed(3);

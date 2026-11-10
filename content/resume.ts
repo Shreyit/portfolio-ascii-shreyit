@@ -89,10 +89,11 @@ export const extracurriculars: Extracurricular[] = [
     period: { start: "2026-10", end: "2026-10" },
     projectSlug: "blitz-4-0",
     details: [],
+    links: { live: "https://blitz-landing-theta.vercel.app/" },
   },
   {
     slug: "sankhya-sustainable-cultural-fest",
-    role: "PR & Marketing",
+    role: "Convenor",
     organisation: "Sankhya – Sustainable Cultural Fest",
     period: { start: "2026-03", end: "2026-03" },
     projectSlug: null,

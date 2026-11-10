@@ -1,22 +1,40 @@
 :root {
-  --bg: #060907;
+  --bg: #050507;
   --fg: #ededed;
-  --muted: #8b928d;
-  --accent: #7ee787;
-  --border: #1f2a22;
-  --surface: #0c110e;
+  --muted: #8e8d99;
+  --accent: #b9a2ff;
+  --accent-2: #f6b26b;
+  --border: #22212b;
+  --surface: #111116;
   --error: #ff7b72;
+
+  /* Field spectrum (engine/palette.ts): indigo → violet → orchid → coral →
+     amber. The engine blends each stop toward --bg in brightness levels. */
+  --spectrum-0: #3438a8;
+  --spectrum-1: #6a4fd8;
+  --spectrum-2: #a66ee8;
+  --spectrum-3: #d77bc0;
+  --spectrum-4: #f08f8a;
+  --spectrum-5: #f6b26b;
+  --gradient-brand: linear-gradient(
+    120deg,
+    #6a4fd8,
+    #a66ee8 30%,
+    #d77bc0 55%,
+    #f08f8a 75%,
+    #f6b26b
+  );
 
   /* Elevation: a deep drop plus a 1px top highlight, so panels read as
      lifted slabs on the near-black page. */
   --shadow-panel:
-    0 24px 64px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.06);
+    0 24px 64px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.06);
   --shadow-panel-hover:
-    0 24px 64px rgb(0 0 0 / 0.7),
-    0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
-    0 0 48px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 24px 64px rgb(0 0 0 / 0.8),
+    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 56px color-mix(in srgb, var(--spectrum-2) 16%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
-  --glow-accent: color-mix(in srgb, var(--accent) 22%, transparent);
+  --glow-accent: color-mix(in srgb, var(--spectrum-2) 26%, transparent);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -56,40 +74,70 @@
 }
 
 [data-theme="light"] {
-  --bg: #f6f9f6;
-  --fg: #1c1c1a;
-  --muted: #5a605b;
-  --accent: #0e7a3d;
-  --border: #dbe4dc;
+  --bg: #fbfaf8;
+  --fg: #1b1a22;
+  --muted: #5d5b69;
+  --accent: #6542c4;
+  --accent-2: #b3561d;
+  --border: #e4e1ea;
   --surface: #ffffff;
   --error: #b42318;
+  --spectrum-0: #4a4fc9;
+  --spectrum-1: #7552d9;
+  --spectrum-2: #9b5bd0;
+  --spectrum-3: #c75a9f;
+  --spectrum-4: #dc6b5f;
+  --spectrum-5: #d98a2b;
+  --gradient-brand: linear-gradient(
+    120deg,
+    #6542c4,
+    #9b5bd0 30%,
+    #c75a9f 55%,
+    #dc6b5f 75%,
+    #d98a2b
+  );
   --shadow-panel:
-    0 12px 32px rgb(20 40 25 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
+    0 12px 32px rgb(40 20 70 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
   --shadow-panel-hover:
-    0 12px 32px rgb(20 40 25 / 0.12),
+    0 12px 32px rgb(40 20 70 / 0.12),
     0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
     inset 0 1px 0 rgb(255 255 255 / 0.9);
-  --glow-accent: color-mix(in srgb, var(--accent) 14%, transparent);
+  --glow-accent: color-mix(in srgb, var(--spectrum-2) 14%, transparent);
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --bg: #f6f9f6;
-    --fg: #1c1c1a;
-    --muted: #5a605b;
-    --accent: #0e7a3d;
-    --border: #dbe4dc;
+    --bg: #fbfaf8;
+    --fg: #1b1a22;
+    --muted: #5d5b69;
+    --accent: #6542c4;
+    --accent-2: #b3561d;
+    --border: #e4e1ea;
     --surface: #ffffff;
     --error: #b42318;
+    --spectrum-0: #4a4fc9;
+    --spectrum-1: #7552d9;
+    --spectrum-2: #9b5bd0;
+    --spectrum-3: #c75a9f;
+    --spectrum-4: #dc6b5f;
+    --spectrum-5: #d98a2b;
+    --gradient-brand: linear-gradient(
+      120deg,
+      #6542c4,
+      #9b5bd0 30%,
+      #c75a9f 55%,
+      #dc6b5f 75%,
+      #d98a2b
+    );
     --shadow-panel:
-      0 12px 32px rgb(20 40 25 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
+      0 12px 32px rgb(40 20 70 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
     --shadow-panel-hover:
-      0 12px 32px rgb(20 40 25 / 0.12),
+      0 12px 32px rgb(40 20 70 / 0.12),
       0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
       inset 0 1px 0 rgb(255 255 255 / 0.9);
-    --glow-accent: color-mix(in srgb, var(--accent) 14%, transparent);
+    --glow-accent: color-mix(in srgb, var(--spectrum-2) 14%, transparent);
 
     color-scheme: light;
   }
@@ -450,13 +498,13 @@ body {
   padding-left: 0;
 }
 
-.content-section li {
+.content-section li:not([data-reveal]) {
   position: relative;
   padding-left: var(--space-6);
   overflow-wrap: anywhere;
 }
 
-.content-section li::before {
+.content-section li:not([data-reveal])::before {
   content: "›";
   position: absolute;
   left: 0;
@@ -1382,4 +1430,267 @@ section[id] {
 
 .theme-toggle {
   white-space: nowrap;
+}
+
+/* Pointer-lit borders --------------------------------------------------- */
+
+/* Panels and cards carry .spot: a spectrum light follows the pointer along
+   their 1px border (position set by lib/motion/effects.ts), and a faint
+   warm glow always rests on the bottom edge. */
+.spot {
+  position: relative;
+  isolation: isolate;
+}
+
+.spot::before,
+.spot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.spot::before {
+  background: radial-gradient(
+    22rem circle at var(--mx, 50%) var(--my, 0%),
+    var(--spectrum-3),
+    var(--spectrum-1) 35%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+.spot::after {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--spectrum-5) 55%, transparent),
+    transparent 35%
+  );
+  opacity: 0.5;
+}
+
+.spot:hover::before,
+.spot:focus-within::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spot::before {
+    transition: none;
+  }
+}
+
+/* Header --------------------------------------------------------------- */
+
+.site-header {
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+.site-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--spectrum-1) 25%,
+    var(--spectrum-3) 55%,
+    var(--spectrum-5) 80%,
+    transparent
+  );
+  opacity: 0.55;
+}
+
+.site-header > a:first-child {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.site-header > a:first-child:hover,
+.site-header > a:first-child:focus-visible {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+nav[aria-label="Sections"] a {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+}
+
+/* Gradient accents ------------------------------------------------------ */
+
+.hero-role > span:first-child,
+.lab-section h2::first-letter {
+  color: var(--accent);
+}
+
+main h2 {
+  letter-spacing: -0.01em;
+}
+
+/* Journey map ------------------------------------------------------------ */
+
+.map {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 64rem) {
+  .map {
+    grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 1fr);
+    align-items: start;
+  }
+}
+
+.map-figure,
+.map-canvas {
+  min-width: 0;
+}
+
+.map-art {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: crosshair;
+}
+
+.map-side {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.map-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.map-play {
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.map-play:hover,
+.map-play:focus-visible,
+.map-play[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.map-stops {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.map-stop {
+  --kind: var(--spectrum-2);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--kind);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.map-stop[data-kind="home"] {
+  --kind: var(--spectrum-5);
+}
+.map-stop[data-kind="study"] {
+  --kind: var(--spectrum-2);
+}
+.map-stop[data-kind="fieldwork"] {
+  --kind: var(--spectrum-4);
+}
+.map-stop[data-kind="work"] {
+  --kind: var(--spectrum-1);
+}
+
+.map-stop:hover,
+.map-stop:focus-visible,
+.map-stop[aria-pressed="true"] {
+  border-color: var(--kind);
+  background: color-mix(in srgb, var(--kind) 12%, var(--bg));
+}
+
+.map-stop:disabled {
+  cursor: default;
+}
+
+.map-stop-index,
+.map-stop-state {
+  color: var(--muted);
+}
+
+.map-stop-kind {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--kind);
+}
+
+.map-card {
+  min-height: 7rem;
+  padding: var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.map-card-title {
+  font-weight: 700;
+}
+
+.map-card-detail,
+.map-card-period {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.map-source {
+  margin-top: var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-xs);
 }

@@ -1,68 +1,36 @@
 import type { AsciiGrid } from "@/components/ascii/engine/grid";
+import { spectrum } from "@/components/ascii/engine/palette";
 import type { AsciiScene, PointerInput } from "@/components/ascii/engine/scene";
+import nameMask from "@/content/generated/name-mask.json";
 
-// A 5x7 block font, only the letters the name needs. Each "#" becomes two
-// grid columns, since character cells are about twice as tall as wide.
-const FONT: Record<string, string[]> = {
-  S: [" ####", "#    ", "#    ", " ### ", "    #", "    #", "#### "],
-  H: ["#   #", "#   #", "#   #", "#####", "#   #", "#   #", "#   #"],
-  R: ["#### ", "#   #", "#   #", "#### ", "# #  ", "#  # ", "#   #"],
-  E: ["#####", "#    ", "#    ", "#### ", "#    ", "#    ", "#####"],
-  Y: ["#   #", "#   #", " # # ", "  #  ", "  #  ", "  #  ", "  #  "],
-  I: ["#####", "  #  ", "  #  ", "  #  ", "  #  ", "  #  ", "#####"],
-  T: ["#####", "  #  ", "  #  ", "  #  ", "  #  ", "  #  ", "  #  "],
-  N: ["#   #", "##  #", "# # #", "#  ##", "#   #", "#   #", "#   #"],
-  A: [" ### ", "#   #", "#   #", "#####", "#   #", "#   #", "#   #"],
-};
+// Ink coverage per cell (0-9), rendered from a heavy typeface by
+// scripts/build-name-mask.mjs. Cells are twice as tall as wide.
+const MASK: readonly string[] = nameMask.mask;
+export const NAME_COLS: number = nameMask.cols;
+export const NAME_ROWS: number = nameMask.rows;
+/** Coverage at or above which a cell is part of the name. */
+const INK = 2;
 
-const LINES = ["SHREYIT", "SINHA"];
-const GLYPH_ROWS = 7;
-const PIXEL_W = 2; // grid columns per font pixel
-const LETTER_GAP = 2; // columns between letters
-const LINE_GAP = 2; // rows between lines
-const MARGIN_X = 2;
-const MARGIN_Y = 1;
-
-const letterWidth = 5 * PIXEL_W;
-const lineWidth = (text: string) =>
-  text.length * letterWidth + (text.length - 1) * LETTER_GAP;
-
-export const NAME_COLS = Math.max(...LINES.map(lineWidth)) + MARGIN_X * 2;
-export const NAME_ROWS =
-  LINES.length * GLYPH_ROWS + (LINES.length - 1) * LINE_GAP + MARGIN_Y * 2;
-
-/** Home cells of every "ink" cell of the name, centred line by line. */
-export function nameCells(): { x: number; y: number }[] {
-  const cells: { x: number; y: number }[] = [];
-  LINES.forEach((line, li) => {
-    const x0 = Math.floor((NAME_COLS - lineWidth(line)) / 2);
-    const y0 = MARGIN_Y + li * (GLYPH_ROWS + LINE_GAP);
-    [...line].forEach((ch, ci) => {
-      const glyph = FONT[ch]!;
-      glyph.forEach((row, ry) => {
-        [...row].forEach((px, rx) => {
-          if (px !== "#") return;
-          for (let k = 0; k < PIXEL_W; k += 1) {
-            cells.push({
-              x: x0 + ci * (letterWidth + LETTER_GAP) + rx * PIXEL_W + k,
-              y: y0 + ry,
-            });
-          }
-        });
-      });
-    });
+/** Home cells of every ink cell of the name, with coverage 0..1. */
+export function nameCells(): { x: number; y: number; c: number }[] {
+  const cells: { x: number; y: number; c: number }[] = [];
+  MASK.forEach((row, y) => {
+    for (let x = 0; x < row.length; x += 1) {
+      const v = row.charCodeAt(x) - 48;
+      if (v >= INK) cells.push({ x, y, c: v / 9 });
+    }
   });
   return cells;
 }
 
-// Palette indices (engine/palette.ts).
-const FG = 0;
-const MUTED = 1;
-const ACCENT = 2;
-
-const REST = "#";
-const SHIMMER = "#%@&8$";
+/** Light glyphs for the soft, anti-aliased edges of each letter. */
+const EDGE = ".:-=+*";
+/** Dense glyphs for the letter bodies; they slowly cycle. */
+const BODY = "#$@%&8BWM0X#";
 const MOVING = ".:-=+*";
+const SCRAMBLE = "!<>-_\\/[]{}=+*^?#%&@$";
+/** Seconds for the intro sweep to cross the name. */
+const INTRO_SWEEP = 1.1;
 
 interface Particle {
   hx: number;
@@ -71,48 +39,80 @@ interface Particle {
   y: number;
   vx: number;
   vy: number;
+  c: number;
   seed: number;
 }
 
 const CELL_ASPECT = 2;
-const RADIUS = 7; // pointer influence, in columns
+const RADIUS = 8; // pointer influence, in columns
 const SPRING = 14;
 const DAMPING = 5.5;
 
+function glyphFor(p: Particle, t: number): string {
+  if (p.c < 0.55) {
+    return EDGE[
+      Math.min(EDGE.length - 1, Math.floor((p.c / 0.55) * EDGE.length))
+    ]!;
+  }
+  // Each body cell steps through the dense set at its own pace.
+  const step = Math.floor(t * (0.6 + (p.seed % 7) * 0.15) + p.seed);
+  return BODY[step % BODY.length]!;
+}
+
+/** Hue sweeps left → right across the name and drifts over time. */
+function colourFor(p: Particle, t: number, boost: number): number {
+  const hue = (p.hx / NAME_COLS) * 0.85 + 0.08 * Math.sin(t * 0.5 + p.hy * 0.3);
+  const wave = Math.sin(p.hx * 0.09 - t * 1.4 + p.hy * 0.25);
+  const level = 0.58 + p.c * 0.35 + (wave > 0.85 ? 0.2 : 0) + boost;
+  return spectrum(Math.min(1, Math.max(0, hue)), Math.min(0.999, level));
+}
+
 /**
- * The name, built from characters that are physically simulated: the
- * pointer pushes them away, springs pull them home, and a click scatters
- * them. Resting characters shimmer gently; moving ones thin out.
+ * The name as physically simulated characters: on load a decode sweep
+ * scrambles them into place; the pointer pushes them away, springs pull them home,
+ * and a click scatters them. Edges are drawn with light glyphs and bodies
+ * with dense, slowly cycling ones, coloured along the spectrum.
  */
-export function createNameScene(): AsciiScene & { burst(): void } {
-  const particles: Particle[] = nameCells().map((c, i) => ({
-    hx: c.x,
-    hy: c.y,
-    x: c.x,
-    y: c.y,
+export function createNameScene(
+  options: { intro?: boolean } = {},
+): AsciiScene & { burst(): void } {
+  const particles: Particle[] = nameCells().map((cell, i) => ({
+    hx: cell.x,
+    hy: cell.y,
+    x: cell.x,
+    y: cell.y,
     vx: 0,
     vy: 0,
+    c: cell.c,
     seed: (i * 7919) % 97,
   }));
   let burst = false;
+  // Intro: a decode sweep runs left to right, scrambling each cell through
+  // random glyphs in warm colours before it settles.
+  let introStart = options.intro ? -1 : -Infinity;
 
   const draw = (grid: AsciiGrid, t: number) => {
-    grid.fill(" ", MUTED);
+    grid.fill(" ", 1);
+    const intro = introStart === -1 ? 0 : t - introStart;
     for (const p of particles) {
       const speed = Math.hypot(p.vx, p.vy);
       const x = Math.round(p.x);
       const y = Math.round(p.y);
+      const settle = (p.hx / NAME_COLS) * INTRO_SWEEP + (p.seed % 9) * 0.03;
+      if (intro < settle) {
+        const ahead = settle - intro;
+        if (ahead < 0.35) {
+          const ch = SCRAMBLE[(p.seed + Math.floor(t * 30)) % SCRAMBLE.length]!;
+          grid.set(x, y, ch, spectrum(0.75 + ahead * 0.6, 0.999));
+        }
+        continue;
+      }
       if (speed > 1.5) {
         const i = Math.min(MOVING.length - 1, Math.floor(speed / 6));
-        grid.set(x, y, MOVING[MOVING.length - 1 - i]!, ACCENT);
+        const hue = Math.min(1, 0.55 + speed / 80);
+        grid.set(x, y, MOVING[MOVING.length - 1 - i]!, spectrum(hue, 0.9));
       } else {
-        // Slow travelling shimmer across the letters.
-        const wave = Math.sin(p.hx * 0.18 - t * 1.6 + p.hy * 0.4);
-        const ch =
-          wave > 0.93
-            ? SHIMMER[(p.seed + Math.floor(t * 4)) % SHIMMER.length]!
-            : REST;
-        grid.set(x, y, ch, wave > 0.93 ? ACCENT : FG);
+        grid.set(x, y, glyphFor(p, t), colourFor(p, t, 0));
       }
     }
   };
@@ -125,6 +125,7 @@ export function createNameScene(): AsciiScene & { burst(): void } {
       draw(grid, 0);
     },
     update(grid, timeMs, dtMs, pointer: PointerInput) {
+      if (introStart === -1) introStart = timeMs / 1000;
       const dt = Math.min(0.05, dtMs / 1000);
       const cx = NAME_COLS / 2;
       const cy = NAME_ROWS / 2;
@@ -155,7 +156,8 @@ export function createNameScene(): AsciiScene & { burst(): void } {
       draw(grid, timeMs / 1000);
     },
     staticFrame(grid) {
-      for (const p of particles) grid.set(p.hx, p.hy, REST, FG);
+      for (const p of particles)
+        grid.set(p.hx, p.hy, glyphFor(p, 0), colourFor(p, 0, 0));
     },
   };
 }
