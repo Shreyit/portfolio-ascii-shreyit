@@ -1,9 +1,18 @@
 import { HeroHeading } from "@/components/HeroHeading";
+import { Terminal } from "@/components/terminal/Terminal";
+import { runCommand } from "@/components/terminal/commands";
+import type { TerminalData } from "@/components/terminal/types";
 import {
   PILLARS,
+  certifications,
+  education,
+  experience,
   extracurriculars,
+  profile,
+  projects,
   projectsByPillar,
   research,
+  skills,
 } from "@/content";
 import type { Pillar } from "@/content/schema";
 
@@ -15,14 +24,39 @@ const PILLAR_LABELS: Record<Pillar, string> = {
   sustainability: "Sustainability",
 };
 
+// Public (reviewed) content only — this is serialised into the page.
+const terminalData: TerminalData = {
+  profile,
+  education,
+  experience,
+  projects,
+  research,
+  skills,
+  extracurriculars,
+  certifications,
+};
+
+const intro = [
+  ...runCommand("neofetch", { data: terminalData, history: [] }).lines,
+  [],
+  [
+    { text: "type ", tone: "muted" as const },
+    { text: "help", cmd: "help", tone: "accent" as const },
+    { text: " or click a highlighted word. press ", tone: "muted" as const },
+    { text: "/", tone: "accent" as const },
+    { text: " to focus.", tone: "muted" as const },
+  ],
+];
+
 export default function Home() {
   return (
     <>
       <HeroHeading />
-      {/* Placeholder tagline — to be replaced with real content later */}
-      <p className="tagline" data-placeholder="true">
-        portfolio — under construction
+      <p className="tagline">
+        {profile.degree} · {profile.institution}
       </p>
+
+      <Terminal data={terminalData} intro={intro} />
 
       <section aria-labelledby="projects-heading">
         <h2 id="projects-heading">Projects</h2>
