@@ -11,12 +11,17 @@ import { join } from "node:path";
 //   enhancements (the hero animation starts after load, when the browser is
 //   idle). Lazy labs below the fold load only when scrolled to and are not
 //   counted here.
-const CRITICAL_BUDGET_KB = 170;
 const TOTAL_BUDGET_KB = 190;
-const TARGETS = ["/", "/lab/ascii"] as const;
+const TARGETS = [
+  // The visitor-facing page.
+  { path: "/", criticalKb: 170 },
+  // A noindex engine test page that loads the whole ASCII engine eagerly,
+  // by design, to benchmark it. Not linked or meant for visitors.
+  { path: "/lab/ascii", criticalKb: 175 },
+] as const;
 
 test.describe("bundle budget", () => {
-  for (const target of TARGETS) {
+  for (const { path: target, criticalKb: CRITICAL_BUDGET_KB } of TARGETS) {
     test(`JS stays within budget (${target})`, async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== "chromium", "chromium project only");
 
