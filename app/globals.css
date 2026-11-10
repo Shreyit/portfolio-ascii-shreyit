@@ -1558,8 +1558,10 @@ main h2 {
   gap: var(--space-2);
 }
 
-/* Glass pills; all kinds share the accent, the label says the kind. */
+/* Glass pills tinted by kind, in the same hues the map uses
+   (KIND_HUE in components/map/scene.ts). */
 .map-stop {
+  --kind: var(--accent);
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: baseline;
@@ -1570,8 +1572,7 @@ main h2 {
   font-size: var(--text-sm);
   color: var(--fg);
   background: color-mix(in srgb, var(--surface) 82%, transparent);
-  border: 1px solid
-    color-mix(in srgb, var(--border) 70%, rgb(255 255 255 / 0.12));
+  border: 1px solid color-mix(in srgb, var(--kind) 22%, var(--border));
   border-radius: 999px;
   padding: var(--space-2) var(--space-4);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
@@ -1586,11 +1587,37 @@ main h2 {
 .map-stop:hover,
 .map-stop:focus-visible,
 .map-stop[aria-pressed="true"] {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--kind) 60%, var(--border));
+  background: color-mix(in srgb, var(--kind) 12%, var(--surface));
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.08),
-    0 0 18px color-mix(in srgb, var(--accent) 18%, transparent);
+    0 0 18px color-mix(in srgb, var(--kind) 18%, transparent);
+}
+
+.map-stop[data-kind="home"] {
+  --kind: var(--spectrum-5);
+}
+.map-stop[data-kind="study"] {
+  --kind: color-mix(in srgb, var(--spectrum-2) 70%, var(--spectrum-3));
+}
+.map-stop[data-kind="fieldwork"] {
+  --kind: color-mix(in srgb, var(--spectrum-3) 45%, var(--spectrum-4));
+}
+.map-stop[data-kind="work"] {
+  --kind: color-mix(in srgb, var(--spectrum-1) 60%, var(--spectrum-2));
+}
+
+/* Kind marker: a small glowing dot before the index. */
+.map-stop-index::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.6em;
+  border-radius: 50%;
+  background: var(--kind);
+  box-shadow: 0 0 8px var(--kind);
+  vertical-align: 0.1em;
 }
 
 .map-stop:disabled {
@@ -1606,7 +1633,7 @@ main h2 {
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: var(--kind);
 }
 
 .map-card {
