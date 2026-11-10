@@ -40,13 +40,14 @@ export interface FieldOptions {
   intensity: number;
   /** Rows scrolled, for a slow parallax drift. */
   scroll: number;
+  /**
+   * A soft Gaussian shadow (centre and radii in cells) that darkens the
+   * field behind a focal element, e.g. the hero name. No edges: it falls
+   * off continuously.
+   */
+  shade?: { x: number; y: number; rx: number; ry: number } | null;
   /** 0..1: a warm glow rising from the bottom edge (page footer). */
   floor?: number;
-  /**
-   * Per-cell multiplier 0..1 (row-major), low where page text sits, so the
-   * field fades out behind words. Null means no text anywhere.
-   */
-  quiet?: Float32Array | null;
 }
 
 /**
@@ -54,7 +55,7 @@ export interface FieldOptions {
  * brightness comes from large, domain-warped noise so it blends smoothly
  * from near-black into soft clouds whose hue drifts through the spectrum.
  * The pointer gently swells the field around it (`fade` eases that in and
- * out), and it hushes behind text.
+ * out), and it stays calmer under the central reading column.
  */
 export function drawField(
   grid: AsciiGrid,
@@ -64,8 +65,12 @@ export function drawField(
   options: FieldOptions = { intensity: 1, scroll: 0 },
 ): void {
   const { cols, rows } = grid;
-  const quiet = options.quiet ?? null;
   const flicker = Math.floor(t * 0.7);
+  const calm = new Float32Array(cols);
+  for (let x = 0; x < cols; x += 1) {
+    const d = Math.abs(x / cols - 0.5) * 2; // 0 centre … 1 edge
+    calm[x] = 0.32 + 0.68 * smooth(0.1, 1, d);
+  }
   const swell2 = SWELL_RADIUS * SWELL_RADIUS;
   for (let y = 0; y < rows; y += 1) {
     const fy = y + options.scroll * 0.35;
@@ -109,13 +114,19 @@ export function drawField(
         hue = hue * (1 - rise) + (0.35 + 0.5 * n) * rise;
       }
 
-      level *= options.intensity;
-      if (quiet) level *= quiet[y * cols + x] ?? 1;
+      // One wide horizontal gradient: calmer under the reading column,
+      // stronger towards the sides. No shapes, so no edges anywhere.
+      level *= options.intensity * calm[x]!;
+      if (options.shade) {
+        const sx = (x - options.shade.x) / options.shade.rx;
+        const sy = (y - options.shade.y) / options.shade.ry;
+        level *= 1 - 0.85 * Math.exp(-(sx * sx + sy * sy));
+      }
 
       const h = hash(x, y);
-      // Dither between brightness levels so the gradient has no bands.
-      const shade = Math.min(0.999, Math.max(0, level + (h - 0.5) * 0.1));
-      if (shade < 0.02) {
+      // Proportional dither: hides banding without speckling dark areas.
+      const shade = Math.min(1, Math.max(0, level * (1 + (h - 0.5) * 0.3)));
+      if (shade < 0.012) {
         grid.set(x, y, " ", 3);
         continue;
       }
@@ -125,78 +136,4 @@ export function drawField(
       grid.set(x, y, char, spectrum(Math.min(1, Math.max(0, hue)), shade));
     }
   }
-}
-
-/** In-place separable box blur of a cols×rows field (radius in cells). */
-function boxBlur(
-  src: Float32Array,
-  cols: number,
-  rows: number,
-  rx: number,
-  ry: number,
-): void {
-  const tmp = new Float32Array(src.length);
-  for (let y = 0; y < rows; y += 1) {
-    let sum = 0;
-    const row = y * cols;
-    for (let x = -rx; x <= rx; x += 1) {
-      sum += src[row + Math.min(cols - 1, Math.max(0, x))]!;
-    }
-    for (let x = 0; x < cols; x += 1) {
-      tmp[row + x] = sum / (2 * rx + 1);
-      sum +=
-        src[row + Math.min(cols - 1, x + rx + 1)]! -
-        src[row + Math.max(0, x - rx)]!;
-    }
-  }
-  for (let x = 0; x < cols; x += 1) {
-    let sum = 0;
-    for (let y = -ry; y <= ry; y += 1) {
-      sum += tmp[Math.min(rows - 1, Math.max(0, y)) * cols + x]!;
-    }
-    for (let y = 0; y < rows; y += 1) {
-      src[y * cols + x] = sum / (2 * ry + 1);
-      sum +=
-        tmp[Math.min(rows - 1, y + ry + 1) * cols + x]! -
-        tmp[Math.max(0, y - ry) * cols + x]!;
-    }
-  }
-}
-
-/**
- * Builds the quiet mask from text boxes given in grid cells: 1 away from
- * text, darker behind it. The boxes are stamped and then blurred three
- * times (≈ Gaussian), so the dimming is a soft, shapeless vignette with no
- * edges or corners anywhere.
- */
-export function quietMask(
-  cols: number,
-  rows: number,
-  boxes: readonly {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    /** Overrides the default floor (lighter hush). */
-    floor?: number;
-  }[],
-  floor = 0.08,
-): Float32Array {
-  const out = new Float32Array(cols * rows).fill(1);
-  for (const b of boxes) {
-    const low = b.floor ?? floor;
-    // Padded so the blurred dip still reaches the floor under the text.
-    const x0 = Math.max(0, Math.floor(b.x - 9));
-    const x1 = Math.min(cols - 1, Math.ceil(b.x + b.w + 9));
-    const y0 = Math.max(0, Math.floor(b.y - 3));
-    const y1 = Math.min(rows - 1, Math.ceil(b.y + b.h + 3));
-    for (let y = y0; y <= y1; y += 1) {
-      for (let x = x0; x <= x1; x += 1) {
-        const i = y * cols + x;
-        if (low < out[i]!) out[i] = low;
-      }
-    }
-  }
-  for (let pass = 0; pass < 3; pass += 1) boxBlur(out, cols, rows, 10, 4);
-  return out;
 }

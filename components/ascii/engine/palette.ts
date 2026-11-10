@@ -12,21 +12,31 @@ export const SPECTRUM_BASE = 5;
 /** Hues interpolated across the --spectrum-* stops. */
 export const HUE_STEPS = 12;
 /** Brightness levels per hue, from barely-there to full colour. */
-export const LEVELS = 8;
-const LEVEL_MIX = [0.07, 0.13, 0.2, 0.29, 0.4, 0.54, 0.74, 1];
+export const LEVELS = 14;
+/**
+ * Brightness of each level (share of the hue mixed into the background).
+ * Roughly geometric, so dim regions get many fine steps and glyphs fade
+ * into black continuously instead of dropping out at a visible edge.
+ */
+const LEVEL_MIX = [
+  0.012, 0.022, 0.035, 0.05, 0.07, 0.095, 0.125, 0.165, 0.215, 0.28, 0.37, 0.5,
+  0.7, 1,
+];
 const SPECTRUM_STOPS = 6;
 
 /**
  * Palette index for a spectrum colour. `hue` 0..1 runs indigo → violet →
- * pink → amber (wrapping is the caller's choice); `level` 0..1 runs from
- * nearly the background colour to full strength.
+ * pink → amber (wrapping is the caller's choice); `level` 0..1 is the
+ * brightness, from the background colour to full strength.
  */
 export function spectrum(hue: number, level: number): number {
   const h = Math.min(
     HUE_STEPS - 1,
     Math.max(0, Math.round(hue * (HUE_STEPS - 1))),
   );
-  const l = Math.min(LEVELS - 1, Math.max(0, Math.floor(level * LEVELS)));
+  // `level` is brightness: pick the brightest level not above it.
+  let l = 0;
+  while (l + 1 < LEVELS && LEVEL_MIX[l + 1]! <= level) l += 1;
   return SPECTRUM_BASE + h * LEVELS + l;
 }
 

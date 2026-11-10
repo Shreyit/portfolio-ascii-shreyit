@@ -5,36 +5,16 @@ import { AsciiGrid } from "@/components/ascii/engine/grid";
 import { CanvasRenderer } from "@/components/ascii/engine/renderer";
 import { scheduler } from "@/components/ascii/engine/scheduler";
 import type { PointerInput } from "@/components/ascii/engine/scene";
-import { drawField, quietMask } from "./field";
+import { drawField } from "./field";
 
 // Target cell size in CSS px (the font follows from it).
 const CELL_W = 7;
 const CELL_H = 15;
-/** Text the field fades out behind. Panels and cards are opaque already. */
-const QUIET = [
-  "main h1",
-  "main h2",
-  "main h3",
-  "main p",
-  "main li",
-  ".site-header",
-  ".site-footer a",
-  ".site-footer > span",
-].join(", ");
-
-/** The tight box of an element's text (block elements span full width). */
-function textBox(el: Element): DOMRect {
-  if (el.matches(".site-header")) return el.getBoundingClientRect();
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  const box = range.getBoundingClientRect();
-  return box.width ? box : el.getBoundingClientRect();
-}
 
 /**
  * Full-viewport ASCII backdrop behind the page. Fixed and non-interactive
- * (pointer-events: none); opaque panels sit above it and it fades out
- * behind loose text. It reads the pointer from the window: the field is
+ * (pointer-events: none); glass panels sit above it and it is calmer
+ * under the central reading column. It reads the pointer from the window: the field is
  * revealed softly around it.
  */
 export default function AmbientField() {
@@ -47,10 +27,8 @@ export default function AmbientField() {
     let renderer: CanvasRenderer | null = null;
     let grid: AsciiGrid | null = null;
     let fade = 0;
-    type Box = { x: number; y: number; w: number; h: number; fixed?: boolean };
-    let pageBoxes: Box[] = [];
     let doc = 0;
-    let heroBox: (Box & { floor: number }) | null = null;
+    let hero: { x: number; y: number; rx: number; ry: number } | null = null;
     let lastScan = -Infinity;
     const pointer: PointerInput = { x: 0, y: 0, active: false };
     const target: PointerInput = { x: 0, y: 0, active: false };
@@ -106,50 +84,23 @@ export default function AmbientField() {
         pointer.y += (target.y - pointer.y) * (pointer.active ? k : 1);
         pointer.active = target.active;
 
-        // Islands mount late, so rescan the text now and then. Boxes are
-        // kept in page coordinates, so frames never read layout (no forced
-        // reflow while Lenis scrolls); only the scroll offset changes.
         const y = window.scrollY;
+        const vh = window.innerHeight;
         if (timeMs - lastScan > 1500) {
           lastScan = timeMs;
           doc = document.documentElement.scrollHeight;
-          const els = [...document.querySelectorAll(QUIET)].filter(
-            (el) => !el.closest(".spot"),
-          );
-          pageBoxes = [];
-          for (const el of els) {
-            const r = textBox(el);
-            if (!r.width) continue;
-            const fixed = el.matches(".site-header");
-            pageBoxes.push({
-              x: r.left / CELL_W,
-              y: (r.top + (fixed ? 0 : y)) / CELL_H,
-              w: r.width / CELL_W,
-              h: r.height / CELL_H,
-              fixed,
-            });
-          }
-          const hero = document
+          // Hero position in page coordinates (read here, not per frame).
+          const r = document
             .querySelector(".hero-art")
             ?.getBoundingClientRect();
-          heroBox = hero?.width
+          hero = r?.width
             ? {
-                x: hero.left / CELL_W,
-                y: (hero.top + y) / CELL_H,
-                w: hero.width / CELL_W,
-                h: hero.height / CELL_H,
-                floor: 0.08,
+                x: (r.left + r.width / 2) / CELL_W,
+                y: (r.top + y + r.height / 2) / CELL_H,
+                rx: r.width / CELL_W / 1.05,
+                ry: r.height / CELL_H / 1.1,
               }
             : null;
-        }
-        const vh = window.innerHeight;
-        const rowsScrolled = y / CELL_H;
-        const viewRows = vh / CELL_H;
-        const boxes: Parameters<typeof quietMask>[2][number][] = [];
-        for (const b of [...pageBoxes, ...(heroBox ? [heroBox] : [])]) {
-          const top = "fixed" in b && b.fixed ? b.y : b.y - rowsScrolled;
-          if (top + b.h < -4 || top > viewRows + 4) continue;
-          boxes.push({ ...b, y: top });
         }
 
         // Strong at the top and at the very bottom, calmer in between.
@@ -160,8 +111,8 @@ export default function AmbientField() {
         drawField(grid, timeMs / 1000, pointer, fade, {
           intensity,
           scroll: y / CELL_H,
-          quiet: quietMask(grid.cols, grid.rows, boxes),
           floor: bottom,
+          shade: hero ? { ...hero, y: hero.y - y / CELL_H } : null,
         });
         renderer.render();
       },

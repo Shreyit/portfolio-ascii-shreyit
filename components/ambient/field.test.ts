@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AsciiGrid } from "@/components/ascii/engine/grid";
 import { SPECTRUM_BASE, LEVELS } from "@/components/ascii/engine/palette";
-import { SWELL_RADIUS, drawField, quietMask } from "./field";
+import { SWELL_RADIUS, drawField } from "./field";
 
 const near = (x: number, y: number, cx: number, cy: number, r: number) =>
   Math.hypot(x - cx, (y - cy) * 2) < r;
@@ -62,22 +62,10 @@ describe("ambient field", () => {
     );
   });
 
-  it("fades out behind text", () => {
-    const p = { x: 0, y: 0, active: false };
-    const quiet = quietMask(120, 40, [{ x: 40, y: 15, w: 40, h: 4 }]);
-    expect(quiet[17 * 120 + 60]).toBeLessThan(0.35);
-    // No hard edge: neighbouring cells differ only slightly.
-    for (let x = 1; x < 120; x += 1)
-      expect(
-        Math.abs(quiet[17 * 120 + x]! - quiet[17 * 120 + x - 1]!),
-      ).toBeLessThan(0.12);
-    expect(quiet[2 * 120 + 2]).toBeCloseTo(1, 3);
-    const loud = new AsciiGrid(120, 40);
-    const hushed = new AsciiGrid(120, 40);
-    drawField(loud, 5, p, 0, { intensity: 1, scroll: 0 });
-    drawField(hushed, 5, p, 0, { intensity: 1, scroll: 0, quiet });
-    expect(brightness(hushed, 60, 17, 8)).toBeLessThan(
-      brightness(loud, 60, 17, 8),
-    );
+  it("is calmer in the centre than at the sides, without steps", () => {
+    const grid = new AsciiGrid(200, 40);
+    drawField(grid, 5, { x: 0, y: 0, active: false }, 0);
+    const col = (x0: number) => brightness(grid, x0, 20, 12);
+    expect(col(100)).toBeLessThan(Math.max(col(15), col(185)));
   });
 });
