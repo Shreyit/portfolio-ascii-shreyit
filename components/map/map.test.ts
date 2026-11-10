@@ -57,7 +57,7 @@ describe("india map", () => {
     if (process.env.PRINT_SCENE) console.log(text);
     expect(text).toContain("PATNA");
     expect(text).toContain("MUMBAI");
-    expect(text).toContain("&"); // home marker
+    expect(text).toMatch(/[\u2801-\u28ff]/); // braille land and markers
 
     const m = project(72.88, 19.08);
     scene.update(grid, 1000, 33, { x: m.x, y: m.y, active: true });

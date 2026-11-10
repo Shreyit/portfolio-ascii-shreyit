@@ -248,11 +248,14 @@ const DIRECTORIES = [
   "certifications",
 ] as const;
 
+// "ANSI Shadow" figlet lettering: solid blocks with an outlined shadow.
 const BANNER = [
-  " ___ _  _ ___ _____   _____ _____ ",
-  "/ __| || | _ \\ __\\ \\ / /_ _|_   _|",
-  "\\__ \\ __ |   / _| \\ V / | |  | |  ",
-  "|___/_||_|_|_\\___| |_| |___| |_|  ",
+  "███████╗██╗  ██╗██████╗ ███████╗██╗   ██╗██╗████████╗",
+  "██╔════╝██║  ██║██╔══██╗██╔════╝╚██╗ ██╔╝██║╚══██╔══╝",
+  "███████╗███████║██████╔╝█████╗   ╚████╔╝ ██║   ██║   ",
+  "╚════██║██╔══██║██╔══██╗██╔══╝    ╚██╔╝  ██║   ██║   ",
+  "███████║██║  ██║██║  ██║███████╗   ██║   ██║   ██║   ",
+  "╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝   ╚═╝   ",
 ];
 
 function labLines(key: ExperienceKey, data: TerminalData): Line[] {
@@ -393,7 +396,7 @@ export const COMMANDS: Command[] = [
         seg(v),
       ];
       return out(
-        ...BANNER.map((row): Line => [seg(row, "accent")]),
+        ...BANNER.map((row): Line => [seg(row, "banner")]),
         blank,
         kv("user", data.profile.name),
         kv("degree", data.profile.degree),

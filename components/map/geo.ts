@@ -67,28 +67,42 @@ function inside(lon: number, lat: number, rings: Ring[]): boolean {
   return hit;
 }
 
+function rasterise(w: number, h: number): Int8Array {
+  const out = new Int8Array(w * h).fill(-1);
+  for (let y = 0; y < h; y += 1) {
+    const lat = MAX_LAT - ((y + 0.5) / h) * SPAN_Y;
+    for (let x = 0; x < w; x += 1) {
+      const lon = MIN_LON + ((x + 0.5) / w) * (MAX_LON - MIN_LON);
+      for (let s = 0; s < STATES.length; s += 1) {
+        const [x0, y0, x1, y1] = STATES[s]!.box;
+        if (lon < x0 || lon > x1 || lat < y0 || lat > y1) continue;
+        if (inside(lon, lat, STATES[s]!.rings)) {
+          out[y * w + x] = s;
+          break;
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * State index per cell (row-major), -1 for cells outside India. Sampled at
  * each cell's centre; computed once per module.
  */
 let cached: Int8Array | null = null;
 export function stateRaster(): Int8Array {
-  if (cached) return cached;
-  const out = new Int8Array(MAP_COLS * MAP_ROWS).fill(-1);
-  for (let y = 0; y < MAP_ROWS; y += 1) {
-    const lat = MAX_LAT - ((y + 0.5) / MAP_ROWS) * SPAN_Y;
-    for (let x = 0; x < MAP_COLS; x += 1) {
-      const lon = MIN_LON + ((x + 0.5) / MAP_COLS) * (MAX_LON - MIN_LON);
-      for (let s = 0; s < STATES.length; s += 1) {
-        const [x0, y0, x1, y1] = STATES[s]!.box;
-        if (lon < x0 || lon > x1 || lat < y0 || lat > y1) continue;
-        if (inside(lon, lat, STATES[s]!.rings)) {
-          out[y * MAP_COLS + x] = s;
-          break;
-        }
-      }
-    }
-  }
-  cached = out;
-  return out;
+  cached ??= rasterise(MAP_COLS, MAP_ROWS);
+  return cached;
+}
+
+/** Braille resolution: each cell holds a 2×4 grid of dots. */
+export const SUB_W = MAP_COLS * 2;
+export const SUB_H = MAP_ROWS * 4;
+
+/** State index per braille dot (row-major, SUB_W × SUB_H), -1 outside. */
+let cachedSub: Int8Array | null = null;
+export function subRaster(): Int8Array {
+  cachedSub ??= rasterise(SUB_W, SUB_H);
+  return cachedSub;
 }

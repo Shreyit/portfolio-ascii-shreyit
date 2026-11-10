@@ -9,7 +9,7 @@ import type {
   Skill,
 } from "@/content/schema";
 
-export type Tone = "default" | "muted" | "accent" | "error";
+export type Tone = "default" | "muted" | "accent" | "error" | "banner";
 
 /** One styled run of text. `href` renders a link, `cmd` a runnable command. */
 export interface Segment {
