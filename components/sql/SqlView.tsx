@@ -85,8 +85,10 @@ export function SqlView(props: SqlViewProps) {
                 onMouseLeave={on(() => props.onHoverTable?.(null))}
                 onFocus={on(() => props.onHoverTable?.(table.name))}
                 onBlur={on(() => props.onHoverTable?.(null))}
-                aria-label={`${table.name}: ${table.description}, ${props.counts[table.name] ?? 0} rows. Query this table.`}
               >
+                <span className="visually-hidden">
+                  {`${table.name}: ${table.description}, ${props.counts[table.name] ?? 0} rows. Query this table.`}
+                </span>
                 <pre aria-hidden="true">{box}</pre>
               </button>
               <p className="sql-table-desc">{table.description}</p>

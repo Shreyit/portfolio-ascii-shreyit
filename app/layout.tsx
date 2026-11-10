@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SectionNav } from "@/components/SectionNav";
+import styles from "@/components/SectionNav.module.css";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
@@ -50,8 +52,11 @@ export default function RootLayout({
           Skip to content
         </a>
         <MotionProvider>
-          <header className="site-header">
-            <span aria-hidden="true">~/shreyit</span>
+          <header className={`site-header ${styles.header}`}>
+            <a className={styles.home} href="#main">
+              ~/shreyit
+            </a>
+            <SectionNav />
             <ThemeToggle />
           </header>
           <main id="main" className="site-main">

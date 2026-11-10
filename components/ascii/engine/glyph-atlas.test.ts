@@ -17,6 +17,7 @@ function fakeCanvas(width: number, height: number): AtlasCanvas {
     clip: vi.fn(),
     fillText: vi.fn(),
     drawImage: vi.fn(),
+    fillRect: vi.fn(),
     font: "",
     textBaseline: "",
     fillStyle: "",
@@ -30,6 +31,8 @@ function options(overrides: Partial<AtlasOptions> = {}): AtlasOptions {
     slotHeight: 20,
     baseline: 15,
     glyphOffsetX: 0,
+    cellWidth: 9.6,
+    cellHeight: 19.2,
     fontFamily: "mono",
     fontPx: 16,
     colors: ["#fff", "#888", "#0f0", "#333"],
@@ -62,6 +65,33 @@ describe("GlyphAtlas", () => {
     expect(atlas.size.height).toBe(MAX_ATLAS_SIZE);
     expect(atlas.get(68, 0)).not.toBeNull();
     expect(atlas.get(69, 0)).toBeNull(); // full → caller falls back
+  });
+});
+
+describe("box drawing", () => {
+  it("draws line characters as strokes reaching the slot edges", () => {
+    const atlas = new GlyphAtlas(options());
+    const ctx = (
+      atlas.source as unknown as {
+        getContext: () => {
+          fillText: ReturnType<typeof vi.fn>;
+          fillRect: ReturnType<typeof vi.fn>;
+        };
+      }
+    ).getContext();
+    atlas.get(0x253c, 0); // ┼
+    expect(ctx.fillText).not.toHaveBeenCalled();
+    expect(ctx.fillRect).toHaveBeenCalledTimes(4);
+    const rects = ctx.fillRect.mock.calls as number[][];
+    // Left stroke starts at the slot's left edge; right stroke reaches its right edge.
+    expect(rects.some(([x]) => x === 0)).toBe(true);
+    expect(rects.some(([x, , w]) => x! + w! === 10)).toBe(true);
+    // Up stroke starts at the top; down stroke reaches the bottom.
+    expect(rects.some(([, y]) => y === 0)).toBe(true);
+    expect(rects.some(([, y, , h]) => y! + h! === 20)).toBe(true);
+
+    atlas.get(65, 0); // "A" still uses the font
+    expect(ctx.fillText).toHaveBeenCalledTimes(1);
   });
 });
 

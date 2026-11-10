@@ -10,7 +10,7 @@ import {
 import { AsciiGrid } from "./engine/grid";
 import { CanvasRenderer } from "./engine/renderer";
 import { scheduler, type SchedulerHandle } from "./engine/scheduler";
-import type { AsciiScene } from "./engine/scene";
+import type { AsciiScene, PointerInput } from "./engine/scene";
 
 export interface AsciiStatsEntry {
   frames: number;
@@ -88,6 +88,21 @@ export function AsciiCanvas({
     let resizeFrame = 0;
     let swapped = false;
 
+    // Pointer position in grid cells, shared with the scene each frame.
+    const pointer: PointerInput = { x: 0, y: 0, active: false };
+    const onPointerMove = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      pointer.x = ((event.clientX - rect.left) / rect.width) * cols;
+      pointer.y = ((event.clientY - rect.top) / rect.height) * rows;
+      pointer.active = true;
+    };
+    const onPointerLeave = () => {
+      pointer.active = false;
+    };
+    figure.addEventListener("pointermove", onPointerMove);
+    figure.addEventListener("pointerleave", onPointerLeave);
+
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const trackStats = () => {
@@ -128,7 +143,7 @@ export function AsciiCanvas({
           handle = scheduler.register({
             fps,
             update: (timeMs, dtMs) => {
-              sceneInstance.update(grid, timeMs, dtMs);
+              sceneInstance.update(grid, timeMs, dtMs, pointer);
               renderer?.render();
               if (renderer) {
                 statsEntry.frames = renderer.stats.frames;
@@ -211,6 +226,8 @@ export function AsciiCanvas({
     return () => {
       disposed = true;
       media.removeEventListener("change", onMediaChange);
+      figure.removeEventListener("pointermove", onPointerMove);
+      figure.removeEventListener("pointerleave", onPointerLeave);
       cancelAnimationFrame(resizeFrame);
       resizeObserver?.disconnect();
       resizeObserver = null;

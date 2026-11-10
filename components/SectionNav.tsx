@@ -1,0 +1,21 @@
+import styles from "./SectionNav.module.css";
+
+const SECTIONS = [
+  { id: "research-heading", label: "research" },
+  { id: "sql-heading", label: "sql" },
+  { id: "ml-heading", label: "ml" },
+  { id: "infra-heading", label: "infra" },
+  { id: "projects-heading", label: "projects" },
+] as const;
+
+export function SectionNav() {
+  return (
+    <nav className={styles.nav} aria-label="Sections">
+      {SECTIONS.map(({ id, label }) => (
+        <a key={id} href={`#${id}`} className={styles.link}>
+          {label}
+        </a>
+      ))}
+    </nav>
+  );
+}

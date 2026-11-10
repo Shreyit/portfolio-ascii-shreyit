@@ -1,4 +1,5 @@
 import { HeroHeading } from "@/components/HeroHeading";
+import { HeroArt } from "@/components/hero/HeroArt";
 import { InfraSection } from "@/components/infra/InfraSection";
 import { MlSection } from "@/components/ml/MlSection";
 import { ResearchSection } from "@/components/research/ResearchSection";
@@ -59,6 +60,8 @@ export default function Home() {
       <p className="tagline">
         {profile.degree} · {profile.institution}
       </p>
+
+      <HeroArt />
 
       <Terminal data={terminalData} intro={intro} />
 

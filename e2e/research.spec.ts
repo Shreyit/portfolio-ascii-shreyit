@@ -47,8 +47,8 @@ test("the index matrix shows sample sizes and an honest gap", async ({
   const section = await openExplorer(page);
   await section.getByRole("tab", { name: /vulnerability index/ }).click();
   await expect(section).toContainText("team of 4");
-  await section.getByRole("cell", { name: /^Tourists, Environmental/ }).hover();
+  await section.getByRole("cell", { name: /Tourists, Environmental/ }).hover();
   await expect(section).toContainText("from 311 respondents");
-  await section.getByRole("cell", { name: /^Workers, Environmental/ }).hover();
+  await section.getByRole("cell", { name: /Workers, Environmental/ }).hover();
   await expect(section).toContainText("left blank rather than filled");
 });

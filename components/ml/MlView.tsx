@@ -193,14 +193,14 @@ function Cell({
       data-kind={c.key}
       data-active={cell === c.key}
       disabled={!interactive}
-      aria-label={`${c.label}: ${n} borrowers ${c.meaning}`}
       onMouseEnter={on(() => set({ cell: c.key }))}
       onFocus={on(() => set({ cell: c.key }))}
       onMouseLeave={on(() => set({ cell: null }))}
       onBlur={on(() => set({ cell: null }))}
     >
-      <span className="ml-cell-label">{c.label}</span>
+      <span className="ml-cell-label">{c.label}</span>{" "}
       <span className="ml-cell-n">{n}</span>
+      <span className="visually-hidden">: borrowers who {c.meaning}</span>
       <Meter value={n / total} className="ml-cell-bar" />
     </button>
   );

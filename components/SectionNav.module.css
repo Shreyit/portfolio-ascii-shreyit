@@ -1,0 +1,43 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+}
+
+.home {
+  color: inherit;
+  text-decoration: none;
+}
+
+.home:hover,
+.home:focus-visible {
+  color: var(--accent);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: var(--text-xs);
+  padding-block: var(--space-1);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent);
+}

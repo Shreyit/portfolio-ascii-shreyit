@@ -28,7 +28,7 @@ test("switching models updates the confusion matrix and metrics", async ({
   const section = await openLab(page);
   await section.getByRole("radio", { name: "majority baseline" }).click();
   await expect(section).toContainText("catches 0 of 36 defaulters");
-  await expect(section.getByRole("button", { name: /^TN: 144/ })).toBeVisible();
+  await expect(section.getByRole("button", { name: /^TN 144/ })).toBeVisible();
 
   await section.getByRole("radio", { name: "support vector machine" }).click();
   await expect(section).toContainText("catches 17 of 36 defaulters");
@@ -36,7 +36,7 @@ test("switching models updates the confusion matrix and metrics", async ({
 
 test("hovering a cell explains it in lender terms", async ({ page }) => {
   const section = await openLab(page);
-  await section.getByRole("button", { name: /^FN:/ }).hover();
+  await section.getByRole("button", { name: /^FN / }).hover();
   await expect(section.locator(".ml-explain")).toContainText(
     "defaulted, but the model approved them",
   );

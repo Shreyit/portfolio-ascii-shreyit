@@ -3,40 +3,56 @@ import { gzipSync } from "node:zlib";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-// Next 16 + React 19 floor ≈137 KB gz + gsap/lenis ≈28 KB gz + headroom.
-// First-load JS must stay under this; Milestone 2 content is server-rendered to help.
-const BUDGET_BYTES = 170 * 1024;
+// Two budgets, gzip:
+// - Critical path: JS requested before the window `load` event — what the
+//   page needs to become interactive. Next 16 + React 19 is ≈137 KB on its
+//   own, gsap/lenis ≈28 KB, plus a little headroom.
+// - Total: everything loaded by network idle, including deferred
+//   enhancements (the hero animation starts after load, when the browser is
+//   idle). Lazy labs below the fold load only when scrolled to and are not
+//   counted here.
+const CRITICAL_BUDGET_KB = 170;
+const TOTAL_BUDGET_KB = 190;
 const TARGETS = ["/", "/lab/ascii"] as const;
 
 test.describe("bundle budget", () => {
   for (const target of TARGETS) {
-    test(`first-load JS gzip total is under 170 KB (${target})`, async ({
-      page,
-    }, testInfo) => {
+    test(`JS stays within budget (${target})`, async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== "chromium", "chromium project only");
 
-      const pending: Promise<Buffer | null>[] = [];
-      page.on("response", (response) => {
-        const url = response.url();
+      let loaded = false;
+      page.on("load", () => {
+        loaded = true;
+      });
+      const scripts: Promise<{ bytes: number; critical: boolean }>[] = [];
+      page.on("request", (request) => {
         const isJs =
-          response.request().resourceType() === "script" || url.endsWith(".js");
-        if (!isJs) {
-          return;
-        }
-        pending.push(response.body().catch(() => null));
+          request.resourceType() === "script" || request.url().endsWith(".js");
+        if (!isJs) return;
+        const critical = !loaded;
+        scripts.push(
+          request
+            .response()
+            .then((r) => r?.body())
+            .then((body) => ({
+              bytes: body ? gzipSync(body).length : 0,
+              critical,
+            }))
+            .catch(() => ({ bytes: 0, critical })),
+        );
       });
 
       await page.goto(target);
       await page.waitForLoadState("networkidle");
+      // Give idle-time enhancements a moment to start and finish loading.
+      await page.waitForTimeout(1500);
+      await page.waitForLoadState("networkidle");
 
-      const bodies = (await Promise.all(pending)).filter(
-        (body): body is Buffer => body !== null,
-      );
-      const totalBytes = bodies.reduce(
-        (sum, body) => sum + gzipSync(body).length,
-        0,
-      );
-      const totalKb = totalBytes / 1024;
+      const all = await Promise.all(scripts);
+      const kb = (xs: typeof all) =>
+        xs.reduce((sum, x) => sum + x.bytes, 0) / 1024;
+      const criticalKb = kb(all.filter((x) => x.critical));
+      const totalKb = kb(all);
 
       mkdirSync("test-results", { recursive: true });
       writeFileSync(
@@ -44,10 +60,21 @@ test.describe("bundle budget", () => {
           "test-results",
           target === "/" ? "bundle-budget.json" : "bundle-budget-lab.json",
         ),
-        JSON.stringify({ target, totalBytes, totalKb, budgetKb: 170 }, null, 2),
+        JSON.stringify(
+          {
+            target,
+            criticalKb,
+            totalKb,
+            criticalBudgetKb: CRITICAL_BUDGET_KB,
+            totalBudgetKb: TOTAL_BUDGET_KB,
+          },
+          null,
+          2,
+        ),
       );
 
-      expect(totalBytes).toBeLessThanOrEqual(BUDGET_BYTES);
+      expect(criticalKb).toBeLessThanOrEqual(CRITICAL_BUDGET_KB);
+      expect(totalKb).toBeLessThanOrEqual(TOTAL_BUDGET_KB);
     });
   }
 });

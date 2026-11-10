@@ -13,6 +13,9 @@ export interface AtlasOptions {
   slotHeight: number; // device px
   baseline: number; // device px from slot top
   glyphOffsetX: number; // device px
+  /** Exact (fractional) cell size, for centring box-drawing strokes. */
+  cellWidth: number; // device px
+  cellHeight: number; // device px
   fontFamily: string;
   fontPx: number; // device px
   colors: readonly string[]; // palette by index
@@ -119,9 +122,15 @@ export class GlyphAtlas {
     ctx.beginPath();
     ctx.rect(rect.sx, rect.sy, o.slotWidth, o.slotHeight);
     ctx.clip();
+    ctx.fillStyle = o.colors[colorIndex] ?? o.colors[0] ?? "#888";
+    const box = BOX_DRAWING[charCode];
+    if (box !== undefined) {
+      drawBox(ctx, rect, box, o);
+      ctx.restore();
+      return;
+    }
     ctx.font = `${o.fontPx}px ${o.fontFamily}`;
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = o.colors[colorIndex] ?? o.colors[0] ?? "#888";
     ctx.fillText(
       String.fromCharCode(charCode),
       rect.sx + o.glyphOffsetX,
@@ -139,6 +148,47 @@ export class GlyphAtlas {
   }
 }
 
+const UP = 1;
+const DOWN = 2;
+const LEFT = 4;
+const RIGHT = 8;
+
+/**
+ * Light box-drawing characters, drawn as strokes that run to the slot edges
+ * instead of font glyphs: glyph outlines rarely fill a cell exactly, which
+ * leaves hairline gaps between rows and columns.
+ */
+export const BOX_DRAWING: Record<number, number> = {
+  0x2500: LEFT | RIGHT, // ─
+  0x2502: UP | DOWN, // │
+  0x250c: DOWN | RIGHT, // ┌
+  0x2510: DOWN | LEFT, // ┐
+  0x2514: UP | RIGHT, // └
+  0x2518: UP | LEFT, // ┘
+  0x251c: UP | DOWN | RIGHT, // ├
+  0x2524: UP | DOWN | LEFT, // ┤
+  0x252c: LEFT | RIGHT | DOWN, // ┬
+  0x2534: LEFT | RIGHT | UP, // ┴
+  0x253c: UP | DOWN | LEFT | RIGHT, // ┼
+};
+
+function drawBox(
+  ctx: AtlasContext,
+  rect: GlyphRect,
+  mask: number,
+  o: AtlasOptions,
+): void {
+  const t = Math.max(1, Math.round(o.fontPx * 0.075));
+  const cx = Math.round(rect.sx + o.cellWidth / 2 - t / 2);
+  const cy = Math.round(rect.sy + o.cellHeight / 2 - t / 2);
+  const right = rect.sx + o.slotWidth;
+  const bottom = rect.sy + o.slotHeight;
+  if (mask & LEFT) ctx.fillRect(rect.sx, cy, cx + t - rect.sx, t);
+  if (mask & RIGHT) ctx.fillRect(cx, cy, right - cx, t);
+  if (mask & UP) ctx.fillRect(cx, rect.sy, t, cy + t - rect.sy);
+  if (mask & DOWN) ctx.fillRect(cx, cy, t, bottom - cy);
+}
+
 // Shared, reference-counted atlases: instances with the same font size, cell
 // size and palette draw from one surface; it is freed when the last releases.
 const shared = new Map<string, { atlas: GlyphAtlas; refs: number }>();
@@ -151,6 +201,8 @@ export function atlasKey(options: AtlasOptions): string {
     options.slotHeight,
     options.baseline.toFixed(3),
     options.glyphOffsetX.toFixed(3),
+    options.cellWidth.toFixed(3),
+    options.cellHeight.toFixed(3),
     options.colors.join(","),
   ].join("|");
 }

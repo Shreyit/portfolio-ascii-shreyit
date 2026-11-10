@@ -166,6 +166,8 @@ export class CanvasRenderer {
       slotHeight: layout.slotHeight,
       baseline: layout.baseline,
       glyphOffsetX: layout.glyphOffsetX,
+      cellWidth: layout.cellWidth,
+      cellHeight: layout.cellHeight,
       fontFamily: this.fontFamily,
       fontPx: layout.fontPx,
       colors: palette.colors,

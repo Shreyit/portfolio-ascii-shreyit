@@ -481,6 +481,9 @@ body {
 }
 
 .sql-table {
+  /* Contains its visually-hidden label, which would otherwise escape the
+     schema's horizontal scroller and widen the whole page. */
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
@@ -710,6 +713,7 @@ samp {
 }
 
 .ml-cell {
+  position: relative;
   display: grid;
   gap: var(--space-1);
   padding: var(--space-3);
@@ -1104,4 +1108,16 @@ samp {
 .research-findings li::before {
   content: "- ";
   color: var(--muted);
+}
+
+/* Hero ------------------------------------------------------------------- */
+
+.hero-art-wrap {
+  margin-top: var(--space-8);
+  overflow-x: auto;
+}
+
+.hero-art {
+  border: 0;
+  cursor: crosshair;
 }

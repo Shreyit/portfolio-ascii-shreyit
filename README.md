@@ -138,6 +138,35 @@ its confusion matrix and that the threshold results match the resume's claim. Th
 is a lazily-loaded island with a server-rendered static view, ASCII sweep chart, and
 tabs for the model arena / decision threshold / fit view.
 
+## Infrastructure simulator
+
+`components/infra/` is an interactive, real-time model of the pattern from the AI
+DataCraftTech internship: FastAPI on EC2 instances in an Auto Scaling group behind an
+Application Load Balancer, static assets on S3/CloudFront, and rolling releases.
+
+- `sim.ts` — a pure simulation model (`createSim`, `step`, `deploy`, `spike`,
+  `killInstance`, `setTraffic`, ...) parameterized by `PARAMS` (capacity per instance,
+  target CPU, min/max instances, boot/drain/detect seconds, cooldowns, spike shape,
+  base latency). Numbers are teaching values, explicitly **not** production measurements.
+- `scene.ts` — an ASCII scene on the engine (`COLS`x`ROWS`): boxes for users/CDN/ALB,
+  instance slots with junctions derived from connection routing (shared trunks get
+  proper ├ ┤ ┬ characters) and stable display slots (lowest free at launch).
+  `infraText()` renders the same state as plain text for the reduced-motion view.
+- `InfraLab.tsx` — steps the model in real time only while the lab is on screen and the
+  tab is visible; reduced-motion users get the plain-text view instead.
+- `InfraPanel.tsx` — live stats + an `aria-live="polite"` event log.
+
+## Research & fieldwork explorer
+
+`components/research/` presents the Nainital and Sangamner fieldwork as interactive
+explorations. Its data lives in `content/research-lab.ts` and is restricted to
+**already-published, aggregated results**: the Nainital Tourism Vulnerability Dashboard
+(public repo, team of 4 — role noted per block; resume responses/zones/pillar counts),
+`Report.md` (contribution table and pillar table), and `Final_Pillar_Report.xlsx`
+(sheet "Pillar Aggregate Scores"). **No row-level survey data is copied** — only group
+means and respondent counts, with the unmeasured Workers × Environmental cell shown as
+missing (no survey question was asked about it). Sources are cited per block in the file.
+
 ## Testing
 
 Unit tests (Vitest, `pnpm test`) cover the content layer (zod parse, allowlist, privacy
@@ -188,6 +217,8 @@ components/ascii/     # ASCII engine (see above) + AsciiCanvas wrapper
 components/terminal/  # Interactive terminal (see above)
 components/sql/       # SQLite playground (sql.js worker; see above)
 components/ml/        # ML laboratory (Rinn study; see above)
+components/infra/     # Infrastructure simulator (see above)
+components/research/  # Research & fieldwork explorer (see above)
 content/              # Typed, validated content layer (see above)
 lib/motion/           # Central animation lifecycle:
   gsap-setup.ts       #   registers ScrollTrigger once (client only)

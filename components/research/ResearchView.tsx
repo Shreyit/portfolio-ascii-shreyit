@@ -377,8 +377,8 @@ function Dashboard({
                       disabled={!interactive}
                       aria-label={
                         c.mean === null
-                          ? `${g}, ${p}: not measured`
-                          : `${g}, ${p}: ${c.mean.toFixed(3)} from ${c.n} respondents`
+                          ? `n/a: ${g}, ${p}, not measured`
+                          : `${c.mean.toFixed(2)}: ${g}, ${p}, from ${c.n} respondents`
                       }
                       style={{ "--v": c.mean ?? 0 } as React.CSSProperties}
                       onMouseEnter={on(() => set({ cell: key }))}
