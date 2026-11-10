@@ -125,6 +125,11 @@ export class GlyphAtlas {
     ctx.rect(rect.sx, rect.sy, o.slotWidth, o.slotHeight);
     ctx.clip();
     ctx.fillStyle = o.colors[colorIndex] ?? o.colors[0] ?? "#888";
+    if (charCode >= 0x2800 && charCode <= 0x28ff) {
+      drawBraille(ctx, rect, charCode - 0x2800, o);
+      ctx.restore();
+      return;
+    }
     const box = BOX_DRAWING[charCode];
     if (box !== undefined) {
       drawBox(ctx, rect, box, o);
@@ -189,6 +194,42 @@ function drawBox(
   if (mask & RIGHT) ctx.fillRect(cx, cy, right - cx, t);
   if (mask & UP) ctx.fillRect(cx, rect.sy, t, cy + t - rect.sy);
   if (mask & DOWN) ctx.fillRect(cx, cy, t, bottom - cy);
+}
+
+// Braille dot bits → (column, row) in the 2×4 cell grid (Unicode order).
+const BRAILLE_DOTS: readonly [number, number][] = [
+  [0, 0],
+  [0, 1],
+  [0, 2],
+  [1, 0],
+  [1, 1],
+  [1, 2],
+  [0, 3],
+  [1, 3],
+];
+
+/**
+ * Braille patterns (U+2800–U+28FF), painted as dots on a 2×4 grid filling
+ * the cell, so braille art renders exactly whatever font is loaded.
+ */
+export function drawBraille(
+  ctx: AtlasContext,
+  rect: GlyphRect,
+  bits: number,
+  o: AtlasOptions,
+): void {
+  const stepX = o.cellWidth / 2;
+  const stepY = o.cellHeight / 4;
+  const r = Math.max(0.6, Math.min(stepX, stepY) * 0.36);
+  ctx.beginPath();
+  BRAILLE_DOTS.forEach(([col, row], i) => {
+    if (!(bits & (1 << i))) return;
+    const x = rect.sx + stepX * (col + 0.5);
+    const y = rect.sy + stepY * (row + 0.5);
+    ctx.moveTo(x + r, y);
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+  });
+  ctx.fill();
 }
 
 // Shared, reference-counted atlases: instances with the same font size, cell

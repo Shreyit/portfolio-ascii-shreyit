@@ -2,6 +2,7 @@ import { ActivityList } from "@/components/ActivityList";
 import { HeroHeading } from "@/components/HeroHeading";
 import { ProjectGrid } from "@/components/ProjectGrid";
 import { HeroArt } from "@/components/hero/HeroArt";
+import { PortraitArt } from "@/components/hero/PortraitArt";
 import { InfraSection } from "@/components/infra/InfraSection";
 import { MapSection } from "@/components/map/MapSection";
 import { MlSection } from "@/components/ml/MlSection";
@@ -48,11 +49,16 @@ const intro = [
 export default function Home() {
   return (
     <>
-      <HeroArt />
-      <HeroHeading />
-      <p className="tagline">
-        {profile.degree} · {profile.institution}
-      </p>
+      <div className="hero-top">
+        <div className="hero-text">
+          <HeroArt />
+          <HeroHeading />
+          <p className="tagline">
+            {profile.degree} · {profile.institution}
+          </p>
+        </div>
+        <PortraitArt />
+      </div>
 
       <Terminal data={terminalData} intro={intro} />
 

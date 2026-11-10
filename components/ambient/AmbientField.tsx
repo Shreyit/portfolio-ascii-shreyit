@@ -27,7 +27,7 @@ export default function AmbientField() {
     let renderer: CanvasRenderer | null = null;
     let grid: AsciiGrid | null = null;
     let fade = 0;
-    let hero: { x: number; y: number; rx: number; ry: number } | null = null;
+    let shades: { x: number; y: number; rx: number; ry: number }[] = [];
     let lastScan = -Infinity;
     const pointer: PointerInput = { x: 0, y: 0, active: false };
     const target: PointerInput = { x: 0, y: 0, active: false };
@@ -87,18 +87,21 @@ export default function AmbientField() {
         const vh = window.innerHeight;
         if (timeMs - lastScan > 1500) {
           lastScan = timeMs;
-          // Hero position in page coordinates (read here, not per frame).
-          const r = document
-            .querySelector(".hero-art")
-            ?.getBoundingClientRect();
-          hero = r?.width
-            ? {
-                x: (r.left + r.width / 2) / CELL_W,
-                y: (r.top + y + r.height / 2) / CELL_H,
-                rx: r.width / CELL_W / 1.05,
-                ry: r.height / CELL_H / 1.1,
-              }
-            : null;
+          // Focal art (name, portrait) in page coordinates, read here
+          // rather than per frame.
+          shades = [];
+          for (const el of document.querySelectorAll(
+            ".hero-art, .portrait-art",
+          )) {
+            const r = el.getBoundingClientRect();
+            if (!r.width) continue;
+            shades.push({
+              x: (r.left + r.width / 2) / CELL_W,
+              y: (r.top + y + r.height / 2) / CELL_H,
+              rx: r.width / CELL_W / 1.05,
+              ry: r.height / CELL_H / 1.1,
+            });
+          }
         }
 
         // Strong at the top, a little calmer further down.
@@ -108,7 +111,7 @@ export default function AmbientField() {
         drawField(grid, timeMs / 1000, pointer, fade, {
           intensity,
           scroll: y / CELL_H,
-          shade: hero ? { ...hero, y: hero.y - y / CELL_H } : null,
+          shade: shades.map((sh) => ({ ...sh, y: sh.y - y / CELL_H })),
         });
         renderer.render();
       },

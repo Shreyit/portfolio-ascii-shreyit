@@ -41,11 +41,11 @@ export interface FieldOptions {
   /** Rows scrolled, for a slow parallax drift. */
   scroll: number;
   /**
-   * A soft Gaussian shadow (centre and radii in cells) that darkens the
-   * field behind a focal element, e.g. the hero name. No edges: it falls
+   * Soft Gaussian shadows (centre and radii in cells) that darken the
+   * field behind focal elements, e.g. the hero name. No edges: it falls
    * off continuously.
    */
-  shade?: { x: number; y: number; rx: number; ry: number } | null;
+  shade?: readonly { x: number; y: number; rx: number; ry: number }[];
 }
 
 /**
@@ -108,9 +108,9 @@ export function drawField(
       // One wide horizontal gradient: calmer under the reading column,
       // stronger towards the sides. No shapes, so no edges anywhere.
       level *= options.intensity * calm[x]!;
-      if (options.shade) {
-        const sx = (x - options.shade.x) / options.shade.rx;
-        const sy = (y - options.shade.y) / options.shade.ry;
+      for (const sh of options.shade ?? []) {
+        const sx = (x - sh.x) / sh.rx;
+        const sy = (y - sh.y) / sh.ry;
         level *= 1 - 0.85 * Math.exp(-(sx * sx + sy * sy));
       }
 
