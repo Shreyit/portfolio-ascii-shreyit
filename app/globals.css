@@ -1809,3 +1809,241 @@ body {
 .lab-callout-meta {
   color: var(--muted);
 }
+
+/* Boot screen ------------------------------------------------------------- */
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background:
+    radial-gradient(
+      ellipse at 30% 20%,
+      color-mix(in srgb, var(--spectrum-1) 16%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 80% 90%,
+      color-mix(in srgb, var(--spectrum-4) 10%, transparent),
+      transparent 55%
+    ),
+    var(--bg);
+  font-family: var(--font-mono);
+  color: var(--fg);
+  cursor: pointer;
+  transform-origin: center;
+  /* Fallback: lift itself even if scripts never run. */
+  animation: boot-failsafe 0.4s ease 8s forwards;
+}
+
+/* Scanlines and a faint vignette, like an old monitor. */
+.boot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.025) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.55));
+}
+
+[data-booted] .boot {
+  display: none;
+}
+
+.boot-inner {
+  width: min(100%, 36rem);
+  font-size: clamp(0.75rem, 2.6vw, 0.95rem);
+  line-height: 1.7;
+}
+
+.boot-title {
+  margin-bottom: var(--space-4);
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 1.6em;
+  color: var(--accent);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.boot-dim,
+.boot-hint {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+}
+
+.boot-hint {
+  margin-top: var(--space-4);
+  font-size: 0.8em;
+  animation: boot-blink 1.2s steps(2) infinite;
+}
+
+.boot-log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Each line types itself in. */
+.boot-log li {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: boot-type 0.35s steps(30, end) forwards;
+}
+
+.boot-status {
+  color: var(--spectrum-5);
+}
+
+.boot-log li[data-status="wait"] .boot-status {
+  color: var(--spectrum-3);
+  animation: boot-blink 0.8s steps(2) infinite;
+}
+
+.boot-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* Braille spinner. */
+.boot-spin::before {
+  content: "\280B";
+  color: var(--accent);
+  animation: boot-spin 0.8s steps(1) infinite;
+}
+
+.boot-track {
+  flex: 1;
+  height: 0.75em;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.boot-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent) 0 6px,
+    transparent 6px 8px
+  );
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: boot-fill 2.1s cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
+}
+
+/* Lift: an old CRT switching off — squash to a line, then to a dot. */
+.boot--off {
+  pointer-events: none;
+  animation: boot-crt 0.7s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+}
+
+@keyframes boot-type {
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes boot-fill {
+  60% {
+    width: 78%;
+  }
+  to {
+    width: 96%;
+  }
+}
+
+@keyframes boot-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes boot-spin {
+  0% {
+    content: "\280B";
+  }
+  12% {
+    content: "\2819";
+  }
+  25% {
+    content: "\2839";
+  }
+  37% {
+    content: "\2838";
+  }
+  50% {
+    content: "\283C";
+  }
+  62% {
+    content: "\2834";
+  }
+  75% {
+    content: "\2826";
+  }
+  87% {
+    content: "\2827";
+  }
+}
+
+@keyframes boot-crt {
+  0% {
+    transform: scale(1, 1);
+    filter: brightness(1);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1, 0.004);
+    filter: brightness(3);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.002, 0.004);
+    filter: brightness(5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes boot-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-log li {
+    width: auto;
+    animation: none;
+  }
+  .boot-fill {
+    width: 90%;
+    animation: none;
+  }
+  .boot-spin::before,
+  .boot-hint,
+  .boot-log li[data-status="wait"] .boot-status {
+    animation: none;
+  }
+  .boot--off {
+    animation: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+}

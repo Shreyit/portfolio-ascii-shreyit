@@ -4,6 +4,7 @@ import { MotionProvider } from "@/lib/motion/MotionProvider";
 import { SectionNav } from "@/components/SectionNav";
 import { EffectsIsland } from "@/lib/motion/EffectsIsland";
 import { ContactLinks } from "@/components/ContactLinks";
+import { BOOT_INIT_SCRIPT, BootScreen } from "@/components/boot/BootScreen";
 import { AmbientIsland } from "@/components/ambient/AmbientIsland";
 import styles from "@/components/SectionNav.module.css";
 import "lenis/dist/lenis.css";
@@ -56,7 +57,11 @@ export default function RootLayout({
       style={{ colorScheme: "dark" }}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: BOOT_INIT_SCRIPT }} />
+      </head>
       <body>
+        <BootScreen />
         {/* Behind everything, outside <main>: it must never paint over content. */}
         <AmbientIsland />
         <a className="skip-link" href="#main">
