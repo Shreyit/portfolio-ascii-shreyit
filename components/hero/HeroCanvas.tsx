@@ -23,6 +23,7 @@ export default function HeroCanvas() {
         minFontPx={HERO_MIN_FONT_PX}
         label={HERO_LABEL}
         className="hero-art"
+        transparent
       />
     </div>
   );

@@ -14,14 +14,17 @@ const CELL_H = 22;
 /**
  * Full-viewport ASCII backdrop behind the page. Fixed, non-interactive
  * (pointer-events: none) and opaque content panels sit above it, so it only
- * shows in the blank areas. It reads the pointer from the window.
+ * shows in the blank areas, where the pointer reveals it in the accent
+ * colour. It reads the pointer from the window.
  */
 export default function AmbientField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const glow = glowRef.current;
+    if (!canvas || !glow) return;
     let disposed = false;
     let renderer: CanvasRenderer | null = null;
     let grid: AsciiGrid | null = null;
@@ -74,6 +77,9 @@ export default function AmbientField() {
         pointer.active = target.active;
         drawField(grid, timeMs / 1000, pointer, fade);
         renderer.render();
+        // A soft accent halo under the revealed glyphs follows the same point.
+        glow.style.opacity = fade.toFixed(3);
+        glow.style.transform = `translate3d(${(pointer.x * window.innerWidth) / grid.cols}px, ${(pointer.y * window.innerHeight) / grid.rows}px, 0)`;
       },
     });
 
@@ -89,6 +95,9 @@ export default function AmbientField() {
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="ambient-field" aria-hidden="true" />
+    <>
+      <canvas ref={canvasRef} className="ambient-field" aria-hidden="true" />
+      <div ref={glowRef} className="ambient-glow" aria-hidden="true" />
+    </>
   );
 }

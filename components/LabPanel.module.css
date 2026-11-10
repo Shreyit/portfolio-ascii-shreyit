@@ -1,14 +1,18 @@
 .panel {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--bg);
+  background: var(--surface);
+  box-shadow: var(--shadow-panel);
   overflow: hidden;
-  transition: border-color 200ms ease;
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
 }
 
 .panel:hover,
 .panel:focus-within {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: var(--shadow-panel-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -23,6 +27,7 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
   color: var(--muted);
   font-size: var(--text-xs);
 }
@@ -57,4 +62,9 @@
 
 .intro {
   min-width: 0;
+}
+
+.panel:hover .dot:first-child,
+.panel:focus-within .dot:first-child {
+  background: var(--accent);
 }

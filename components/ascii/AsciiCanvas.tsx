@@ -34,6 +34,8 @@ interface AsciiCanvasProps {
   /** Smallest font size (CSS px) before the figure stops shrinking. */
   minFontPx?: number;
   className?: string;
+  /** Let whatever is behind the figure show through blank cells. */
+  transparent?: boolean;
 }
 
 const CELL_ASPECT = 0.6; // JetBrains Mono advance = 600/1000 em
@@ -48,6 +50,7 @@ export function AsciiCanvas({
   fps,
   minFontPx = DEFAULT_MIN_FONT_PX,
   className,
+  transparent = false,
 }: AsciiCanvasProps) {
   // Static frame is computed with a plain grid — runs on the server and
   // works with no JS at all.
@@ -129,7 +132,11 @@ export function AsciiCanvas({
         return;
       }
       const fontFamily = getComputedStyle(figure).fontFamily;
-      renderer = new CanvasRenderer(canvas, grid, { fontFamily, maxDpr: 2 });
+      renderer = new CanvasRenderer(canvas, grid, {
+        fontFamily,
+        maxDpr: 2,
+        transparent,
+      });
       void renderer
         .init(canvas.clientWidth, canvas.clientHeight)
         .then(() => {
@@ -239,7 +246,7 @@ export function AsciiCanvas({
       renderer = null;
       untrackStats();
     };
-  }, [scene, cols, rows, fps]);
+  }, [scene, cols, rows, fps, transparent]);
 
   const style = {
     "--ascii-cols": cols,

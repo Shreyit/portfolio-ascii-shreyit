@@ -7,6 +7,8 @@ import { onThemeChange, readPalette, type Palette } from "./palette";
 export interface CanvasRendererOptions {
   fontFamily: string;
   maxDpr?: number;
+  /** Clear cells to transparent instead of painting the page background. */
+  transparent?: boolean;
 }
 
 export interface RendererStats {
@@ -26,6 +28,7 @@ export class CanvasRenderer {
   private readonly grid: AsciiGrid;
   private readonly fontFamily: string;
   private readonly maxDpr: number;
+  private readonly transparent: boolean;
   private ctx: CanvasRenderingContext2D | null = null;
   private font: FontMetrics | null = null;
   private layout: CellLayout | null = null;
@@ -46,6 +49,7 @@ export class CanvasRenderer {
     this.grid = grid;
     this.fontFamily = options.fontFamily;
     this.maxDpr = options.maxDpr ?? 2;
+    this.transparent = options.transparent ?? false;
   }
 
   /** Measures the font and lays out for the given CSS box. */
@@ -54,7 +58,7 @@ export class CanvasRenderer {
     if (this.destroyed) {
       return;
     }
-    this.ctx = this.canvas.getContext("2d", { alpha: false });
+    this.ctx = this.canvas.getContext("2d", { alpha: this.transparent });
     this.palette = readPalette(document.documentElement);
     this.unsubscribeTheme = onThemeChange(() => this.refreshPalette());
     this.resize(cssWidth, cssHeight);
@@ -105,8 +109,12 @@ export class CanvasRenderer {
     this.grid.forEachDirty((x, y, i) => {
       const [dx, dw] = cellSpan(x, layout.cellWidth);
       const [dy, dh] = cellSpan(y, layout.cellHeight);
-      ctx.fillStyle = palette.bg;
-      ctx.fillRect(dx, dy, dw, dh);
+      if (this.transparent) {
+        ctx.clearRect(dx, dy, dw, dh);
+      } else {
+        ctx.fillStyle = palette.bg;
+        ctx.fillRect(dx, dy, dw, dh);
+      }
 
       const code = chars[i]!;
       if (code === 32) {
@@ -180,8 +188,12 @@ export class CanvasRenderer {
 
   private fullRedraw(): void {
     if (this.ctx && this.palette) {
-      this.ctx.fillStyle = this.palette.bg;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      if (this.transparent) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      } else {
+        this.ctx.fillStyle = this.palette.bg;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      }
     }
     this.grid.markAllDirty();
   }

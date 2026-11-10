@@ -1,11 +1,22 @@
 :root {
-  --bg: #0d0d0d;
-  --fg: #e8e6e3;
-  --muted: #8a8a8a;
+  --bg: #060907;
+  --fg: #ededed;
+  --muted: #8b928d;
   --accent: #7ee787;
-  --border: #2a2a2a;
-  --surface: #141414;
+  --border: #1f2a22;
+  --surface: #0c110e;
   --error: #ff7b72;
+
+  /* Elevation: a deep drop plus a 1px top highlight, so panels read as
+     lifted slabs on the near-black page. */
+  --shadow-panel:
+    0 24px 64px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  --shadow-panel-hover:
+    0 24px 64px rgb(0 0 0 / 0.7),
+    0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 0 48px color-mix(in srgb, var(--accent) 10%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --glow-accent: color-mix(in srgb, var(--accent) 22%, transparent);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -45,26 +56,40 @@
 }
 
 [data-theme="light"] {
-  --bg: #fafaf9;
+  --bg: #f6f9f6;
   --fg: #1c1c1a;
-  --muted: #5f5f5c;
+  --muted: #5a605b;
   --accent: #0e7a3d;
-  --border: #e2e2df;
+  --border: #dbe4dc;
   --surface: #ffffff;
   --error: #b42318;
+  --shadow-panel:
+    0 12px 32px rgb(20 40 25 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --shadow-panel-hover:
+    0 12px 32px rgb(20 40 25 / 0.12),
+    0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --glow-accent: color-mix(in srgb, var(--accent) 14%, transparent);
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --bg: #fafaf9;
+    --bg: #f6f9f6;
     --fg: #1c1c1a;
-    --muted: #5f5f5c;
+    --muted: #5a605b;
     --accent: #0e7a3d;
-    --border: #e2e2df;
+    --border: #dbe4dc;
     --surface: #ffffff;
     --error: #b42318;
+    --shadow-panel:
+      0 12px 32px rgb(20 40 25 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.9);
+    --shadow-panel-hover:
+      0 12px 32px rgb(20 40 25 / 0.12),
+      0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+      inset 0 1px 0 rgb(255 255 255 / 0.9);
+    --glow-accent: color-mix(in srgb, var(--accent) 14%, transparent);
 
     color-scheme: light;
   }
@@ -1285,6 +1310,7 @@ button:disabled {
 
 .hero-art {
   border: 0;
+  background: transparent;
   cursor: crosshair;
 }
 
@@ -1326,6 +1352,24 @@ section[id] {
   height: 100vh;
   pointer-events: none;
   font-family: var(--font-mono);
+}
+
+.ambient-glow {
+  position: fixed;
+  top: -20rem;
+  left: -20rem;
+  z-index: 0;
+  width: 40rem;
+  height: 40rem;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--glow-accent),
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
 }
 
 /* Page content sits above the backdrop; panels are opaque, so the field
