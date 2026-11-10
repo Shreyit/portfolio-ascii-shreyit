@@ -1583,21 +1583,6 @@ main h2 {
   font-size: var(--text-xs);
 }
 
-/* Footer wordmark: huge, solid, with the field glowing up behind it. */
-.footer-wordmark {
-  margin: var(--space-12) 0 var(--space-4);
-  font-family: var(--font-sans);
-  font-weight: 900;
-  font-size: clamp(4.5rem, 21vw, 19rem);
-  line-height: 1;
-  letter-spacing: -0.06em;
-  color: var(--fg);
-  text-align: center;
-  user-select: none;
-  white-space: nowrap;
-  padding-bottom: 0.08em;
-}
-
 /* Full-bleed header bar: spans the whole viewport (body has a 16px gutter),
    content stays on the 72rem column. */
 .site-header {

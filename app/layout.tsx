@@ -63,10 +63,7 @@ export default function RootLayout({
           </main>
           <footer className="site-footer site-footer--stacked">
             <ContactLinks />
-            <p className="footer-wordmark" aria-hidden="true">
-              Shreyit
-            </p>
-            <span>&copy; Shreyit Sinha · made of characters</span>
+            <span>&copy; Shreyit Sinha</span>
           </footer>
         </MotionProvider>
       </body>

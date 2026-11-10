@@ -27,7 +27,6 @@ export default function AmbientField() {
     let renderer: CanvasRenderer | null = null;
     let grid: AsciiGrid | null = null;
     let fade = 0;
-    let doc = 0;
     let hero: { x: number; y: number; rx: number; ry: number } | null = null;
     let lastScan = -Infinity;
     const pointer: PointerInput = { x: 0, y: 0, active: false };
@@ -88,7 +87,6 @@ export default function AmbientField() {
         const vh = window.innerHeight;
         if (timeMs - lastScan > 1500) {
           lastScan = timeMs;
-          doc = document.documentElement.scrollHeight;
           // Hero position in page coordinates (read here, not per frame).
           const r = document
             .querySelector(".hero-art")
@@ -103,15 +101,13 @@ export default function AmbientField() {
             : null;
         }
 
-        // Strong at the top and at the very bottom, calmer in between.
+        // Strong at the top, a little calmer further down.
         const top = Math.min(1, Math.max(0, y / vh - 0.2));
-        const bottom = Math.min(1, Math.max(0, 1 - (doc - y - vh) / vh));
-        const intensity = Math.max(1 - 0.45 * top, bottom);
+        const intensity = 1 - 0.3 * top;
 
         drawField(grid, timeMs / 1000, pointer, fade, {
           intensity,
           scroll: y / CELL_H,
-          floor: bottom,
           shade: hero ? { ...hero, y: hero.y - y / CELL_H } : null,
         });
         renderer.render();

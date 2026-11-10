@@ -46,8 +46,6 @@ export interface FieldOptions {
    * off continuously.
    */
   shade?: { x: number; y: number; rx: number; ry: number } | null;
-  /** 0..1: a warm glow rising from the bottom edge (page footer). */
-  floor?: number;
 }
 
 /**
@@ -69,7 +67,7 @@ export function drawField(
   const calm = new Float32Array(cols);
   for (let x = 0; x < cols; x += 1) {
     const d = Math.abs(x / cols - 0.5) * 2; // 0 centre … 1 edge
-    calm[x] = 0.32 + 0.68 * smooth(0.1, 1, d);
+    calm[x] = 0.6 + 0.4 * smooth(0.1, 1, d);
   }
   const swell2 = SWELL_RADIUS * SWELL_RADIUS;
   for (let y = 0; y < rows; y += 1) {
@@ -89,7 +87,7 @@ export function drawField(
         noise(nx * 0.09 - t * 0.04, ny * 0.18) * 0.2;
       // Soft clouds: long gradients from near-black into bright cores.
       const cloud = smooth(0.3, 0.88, n);
-      let level = 0.04 + Math.pow(cloud, 1.7) * 0.96;
+      let level = 0.08 + Math.pow(cloud, 1.25) * 0.92;
       let hue = noise(nx * 0.008 + 3.1, ny * 0.016 - t * 0.012) * 1.2 - 0.1;
       let hot = 0;
 
@@ -101,17 +99,10 @@ export function drawField(
           // Gaussian reveal, no hard rim: brighter, warmer and denser
           // glyphs that blend back into the field.
           const g = Math.exp((-3.2 * d2) / swell2) * fade;
-          level += g * 0.6;
+          level = level * (1 + g * 1.5) + g * 0.75;
           hue += g * 0.3;
           hot = Math.max(hot, g);
         }
-      }
-
-      if (options.floor) {
-        // Light pooling up from the bottom, brightest under the footer.
-        const rise = smooth(0.35, 1, y / rows) * options.floor;
-        level += rise * (0.45 + 0.4 * n);
-        hue = hue * (1 - rise) + (0.35 + 0.5 * n) * rise;
       }
 
       // One wide horizontal gradient: calmer under the reading column,
