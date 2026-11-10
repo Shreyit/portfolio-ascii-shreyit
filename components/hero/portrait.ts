@@ -45,22 +45,14 @@ export function portraitCells(): { x: number; y: number; ch: string }[] {
   return cells;
 }
 
-/** Centre and radii of the face (fractions of the portrait), lit brighter. */
-const FACE = { x: 0.55, y: 0.3, rx: 0.2, ry: 0.22 };
-
 /**
- * Hue runs top (violet) to bottom (orchid); denser cells are brighter, and
- * a soft Gaussian highlight lifts the face so it reads first.
+ * Hue runs top (violet) to bottom (orchid); denser cells are brighter. A
+ * gentle vertical ramp lifts the top (the face) and settles the bottom.
  */
 function colourFor(p: Particle, glow: number): number {
-  const fx = (p.hx / PORTRAIT_COLS - FACE.x) / FACE.rx;
-  const fy = (p.hy / PORTRAIT_ROWS - FACE.y) / FACE.ry;
-  const face = Math.exp(-(fx * fx + fy * fy));
-  const hue = 0.3 + (p.hy / PORTRAIT_ROWS) * 0.35 + face * 0.12;
-  const level = 0.72 + p.ink * 0.28 + face * 0.3 + glow;
-  // Past the darker violets: dithered into the light lavender accent, so
-  // the face is brighter with no visible edge.
-  if (glow < 0.05 && ((p.seed % 20) + 1) / 21 < face * 0.85) return 2;
+  const v = p.hy / PORTRAIT_ROWS;
+  const hue = 0.3 + v * 0.35;
+  const level = 0.72 + p.ink * 0.28 + (0.45 - v) * 0.4 + glow;
   return spectrum(Math.min(1, hue + glow * 0.4), Math.min(1, level));
 }
 
