@@ -24,6 +24,11 @@ const MAX_DT_MS = 100;
 
 export class Scheduler {
   private jobs = new Map<number, JobEntry>();
+  /**
+   * Global frame-rate multiplier (0..1], lowered by the quality governor
+   * (lib/perf/governor.ts) on devices that cannot keep up.
+   */
+  fpsScale = 1;
   private nextId = 1;
   private tickerCallback: ((timeSeconds: number) => void) | null = null;
 
@@ -85,7 +90,7 @@ export class Scheduler {
       if (entry.paused) {
         continue;
       }
-      const fps = entry.job.fps ?? DEFAULT_FPS;
+      const fps = (entry.job.fps ?? DEFAULT_FPS) * this.fpsScale;
       const minDelta = 1000 / fps;
 
       if (entry.lastRunMs !== null) {

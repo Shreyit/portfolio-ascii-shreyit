@@ -77,9 +77,12 @@ export default function AmbientField() {
     document.documentElement.addEventListener("pointerleave", onLeave);
 
     const handle = scheduler.register({
-      fps: 20,
+      fps: 16,
       update(timeMs, dtMs) {
         if (!grid || !renderer) return;
+        // Hold the backdrop still while scrolling: fewer pixels change
+        // under the moving panels, so scrolling stays smooth.
+        if (document.documentElement.dataset.scrolling) return;
         const k = Math.min(1, dtMs / 220);
         fade += ((target.active ? 1 : 0) - fade) * k;
         pointer.x += (target.x - pointer.x) * (pointer.active ? k : 1);

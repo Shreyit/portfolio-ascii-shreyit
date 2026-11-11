@@ -1,5 +1,6 @@
 import { gsap, loadScrollTrigger } from "./gsap-setup";
 import { scramble } from "./scramble";
+import { startGovernor } from "@/lib/perf/governor";
 
 const REVEAL = "[data-reveal], .lab-section, .content-section > h2";
 
@@ -11,7 +12,7 @@ const REVEAL = "[data-reveal], .lab-section, .content-section > h2";
  */
 export async function startEffects(): Promise<() => void> {
   const ScrollTrigger = await loadScrollTrigger();
-  const cleanups: (() => void)[] = [];
+  const cleanups: (() => void)[] = [startGovernor()];
   const ctx = gsap.context(() => {
     // Reveal what is still below the fold; never hide what is on screen.
     const below = gsap.utils

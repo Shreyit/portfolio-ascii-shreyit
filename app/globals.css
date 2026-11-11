@@ -2074,3 +2074,20 @@ body {
 [data-scrolling] :is(.terminal, .lab-section, .spot) {
   background-color: color-mix(in srgb, var(--surface) 88%, transparent);
 }
+
+/* Effects tiers (lib/perf/governor.ts). "medium" drops the live glass blur
+   on panels (a denser tint instead); "low" also hides the ambient field. */
+:is([data-fx="medium"], [data-fx="low"])
+  :is(.terminal, .lab-section, .spot, .map-stop, .lab-badge),
+:is([data-fx="medium"], [data-fx="low"]) #contact li,
+:is([data-fx="medium"], [data-fx="low"]) .site-footer::before {
+  backdrop-filter: none;
+}
+
+:is([data-fx="medium"], [data-fx="low"]) :is(.terminal, .lab-section, .spot) {
+  background-color: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+[data-fx="low"] .ambient-field {
+  display: none;
+}
