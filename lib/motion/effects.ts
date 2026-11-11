@@ -67,9 +67,8 @@ export async function startEffects(): Promise<() => void> {
     }
   });
 
-  // Glass blur is costly to recompute while panels move: pause it during
-  // scrolling (CSS swaps in a denser tint) and restore it when scrolling
-  // settles.
+  // Flag scrolling so the ambient field holds still under the moving
+  // panels; cleared when scrolling settles.
   const root = document.documentElement;
   let settle = 0;
   const onScroll = () => {
@@ -95,12 +94,23 @@ export async function startEffects(): Promise<() => void> {
   document.addEventListener("focusin", onNav);
 
   // Panels and cards: a light follows the pointer along their border.
-  const onMove = (event: PointerEvent) => {
-    const el = (event.target as Element).closest<HTMLElement>(".spot");
-    if (!el) return;
+  // At most once per frame: pointer events can outpace the display.
+  let spotEvent: PointerEvent | null = null;
+  let spotRaf = 0;
+  const moveSpot = () => {
+    spotRaf = 0;
+    const event = spotEvent;
+    const el = event
+      ? (event.target as Element).closest<HTMLElement>(".spot")
+      : null;
+    if (!event || !el) return;
     const r = el.getBoundingClientRect();
     el.style.setProperty("--mx", `${event.clientX - r.left}px`);
     el.style.setProperty("--my", `${event.clientY - r.top}px`);
+  };
+  const onMove = (event: PointerEvent) => {
+    spotEvent = event;
+    if (!spotRaf) spotRaf = requestAnimationFrame(moveSpot);
   };
   document.addEventListener("pointermove", onMove, { passive: true });
 
@@ -110,5 +120,6 @@ export async function startEffects(): Promise<() => void> {
     document.removeEventListener("pointerover", onNav);
     document.removeEventListener("focusin", onNav);
     document.removeEventListener("pointermove", onMove);
+    cancelAnimationFrame(spotRaf);
   };
 }
