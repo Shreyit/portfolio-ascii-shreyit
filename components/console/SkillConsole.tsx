@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 import { press, type Cart, type ConsoleInput } from "./carts";
+import { isMuted, playSound, toggleMuted } from "./sound";
 import { ConsoleView } from "./ConsoleView";
 
 const KEYS: Record<string, ConsoleInput> = {
@@ -16,19 +17,94 @@ const KEYS: Record<string, ConsoleInput> = {
   Backspace: "b",
 };
 
+// Konami: up up down down left right left right b a
+const KONAMI: readonly ConsoleInput[] = [
+  "up",
+  "up",
+  "down",
+  "down",
+  "left",
+  "right",
+  "left",
+  "right",
+  "b",
+  "a",
+];
+
 export default function SkillConsole({ carts }: { carts: Cart[] }) {
   const [state, setState] = useState({ cart: 0, cursor: 0, inspecting: false });
-  const input = (i: ConsoleInput) => setState((s) => press(s, i, carts));
+  const [muted, setMuted] = useState(() => isMuted());
+  const stateRef = useRef(state);
+  const konamiRef = useRef<ConsoleInput[]>([]);
+  const firstInteractionRef = useRef(true);
+
   const skill = carts[state.cart]?.skills[state.cursor];
 
-  const start = () => {
-    if (skill?.lab) window.location.hash = skill.lab.href;
+  const gesture = () => {
+    if (firstInteractionRef.current) {
+      firstInteractionRef.current = false;
+      playSound("powerOn");
+      return true;
+    }
+    return false;
   };
+
+  const trackKonami = (input: ConsoleInput) => {
+    const next = [...konamiRef.current, input].slice(-KONAMI.length);
+    konamiRef.current = next;
+    if (
+      next.length === KONAMI.length &&
+      next.every((v, i) => v === KONAMI[i])
+    ) {
+      konamiRef.current = [];
+      playSound("konami");
+    }
+  };
+
+  const input = (i: ConsoleInput) => {
+    const prev = stateRef.current;
+    const next = press(prev, i, carts);
+    stateRef.current = next;
+    setState(next);
+
+    gesture();
+    trackKonami(i);
+
+    if (i === "up") {
+      playSound(next.cursor > prev.cursor ? "wrap" : "move");
+    } else if (i === "down") {
+      playSound(next.cursor < prev.cursor ? "wrap" : "move");
+    } else if (i === "left" || i === "right") {
+      playSound(next.cart === prev.cart ? "move" : "cart");
+    } else if (i === "a") {
+      playSound("confirm");
+    } else if (i === "b") {
+      playSound("back");
+    }
+  };
+
+  const insert = (cart: number) => {
+    stateRef.current = { cart, cursor: 0, inspecting: false };
+    setState(stateRef.current);
+    gesture();
+    playSound("cart");
+  };
+
+  const start = () => {
+    if (!skill?.lab) return;
+    gesture();
+    playSound("start");
+    window.location.hash = skill.lab.href;
+  };
+
   // SELECT: a random skill from any cartridge, opened straight away.
   const random = () => {
     const cart = Math.floor(Math.random() * carts.length);
     const cursor = Math.floor(Math.random() * carts[cart]!.skills.length);
-    setState({ cart, cursor, inspecting: true });
+    stateRef.current = { cart, cursor, inspecting: true };
+    setState(stateRef.current);
+    gesture();
+    playSound("select");
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -41,15 +117,27 @@ export default function SkillConsole({ carts }: { carts: Cart[] }) {
     input(mapped);
   };
 
+  const toggleSound = () => {
+    // Toggling sound is itself a gesture: power the console on first.
+    gesture();
+    const next = toggleMuted();
+    setMuted(next);
+    if (!next) {
+      playSound("move");
+    }
+  };
+
   return (
     <ConsoleView
       {...state}
       carts={carts}
       onPress={input}
-      onInsert={(cart) => setState({ cart, cursor: 0, inspecting: false })}
+      onInsert={insert}
       onStart={start}
       onSelect={random}
       onKeyDown={onKeyDown}
+      soundMuted={muted}
+      onToggleSound={toggleSound}
     />
   );
 }

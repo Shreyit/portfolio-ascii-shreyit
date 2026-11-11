@@ -10,6 +10,42 @@ export interface ConsoleViewProps extends ConsoleState {
   onStart?: () => void;
   onSelect?: () => void;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
+  /** Whether sound is currently muted (sound defaults to on). */
+  soundMuted?: boolean;
+  onToggleSound?: () => void;
+}
+
+function PixelSpeaker({ muted }: { muted: boolean }) {
+  return muted ? (
+    <svg
+      className="console-sound-glyph"
+      viewBox="0 0 16 16"
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      <rect x="2" y="6" width="2" height="4" fill="currentColor" />
+      <rect x="4" y="5" width="1" height="6" fill="currentColor" />
+      <rect x="5" y="4" width="1" height="8" fill="currentColor" />
+      <rect x="6" y="3" width="1" height="10" fill="currentColor" />
+      <rect x="10" y="7" width="1" height="2" fill="currentColor" />
+      <rect x="12" y="5" width="1" height="6" fill="currentColor" />
+    </svg>
+  ) : (
+    <svg
+      className="console-sound-glyph"
+      viewBox="0 0 16 16"
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
+      <rect x="2" y="6" width="2" height="4" fill="currentColor" />
+      <rect x="4" y="5" width="1" height="6" fill="currentColor" />
+      <rect x="5" y="4" width="1" height="8" fill="currentColor" />
+      <rect x="6" y="3" width="1" height="10" fill="currentColor" />
+      <rect x="9" y="7" width="1" height="2" fill="currentColor" />
+      <rect x="11" y="5" width="1" height="6" fill="currentColor" />
+      <rect x="13" y="3" width="1" height="10" fill="currentColor" />
+    </svg>
+  );
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -158,6 +194,19 @@ export function ConsoleView(props: ConsoleViewProps) {
             <span aria-hidden="true">start</span>
           </span>
           <span className="console-grille" aria-hidden="true" />
+          <span className="console-pill-wrap console-sound-wrap">
+            <button
+              type="button"
+              className="console-sound"
+              aria-pressed={props.soundMuted ?? false}
+              aria-label={props.soundMuted ? "Sound off" : "Sound on"}
+              disabled={!props.onToggleSound}
+              onClick={props.onToggleSound}
+            >
+              <PixelSpeaker muted={props.soundMuted ?? false} />
+            </button>
+            <span aria-hidden="true">sound</span>
+          </span>
         </div>
       </div>
 

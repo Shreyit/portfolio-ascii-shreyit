@@ -39,3 +39,40 @@ test("the console plays with buttons and the keyboard", async ({ page }) => {
     section.getByRole("button", { name: /^Programming Languages/ }),
   ).toHaveAttribute("aria-pressed", "true");
 });
+
+test("sound mute toggle works and persists across reload", async ({ page }) => {
+  await page.goto("/");
+  const section = page.getByRole("region", { name: "Skills" });
+  await section.scrollIntoViewIfNeeded();
+  await expect(section.locator("[data-console-ready]")).toHaveAttribute(
+    "data-console-ready",
+    "true",
+  );
+  // Reaching for the console stops its idle float.
+  await section.locator(".console").hover();
+
+  const mute = section.getByRole("button", { name: /^Sound (on|off)$/ });
+  await expect(mute).toBeVisible();
+  await expect(mute).toHaveAttribute("aria-pressed", "false");
+
+  await mute.click();
+  await expect(mute).toHaveAttribute("aria-pressed", "true");
+  await expect(mute).toHaveAccessibleName("Sound off");
+
+  await page.reload();
+  const sectionAfter = page.getByRole("region", { name: "Skills" });
+  await sectionAfter.scrollIntoViewIfNeeded();
+  await expect(sectionAfter.locator("[data-console-ready]")).toHaveAttribute(
+    "data-console-ready",
+    "true",
+  );
+  await sectionAfter.locator(".console").hover();
+  const muteAfter = sectionAfter.getByRole("button", {
+    name: /^Sound (on|off)$/,
+  });
+  await expect(muteAfter).toHaveAttribute("aria-pressed", "true");
+
+  // Leave it the way we found it.
+  await muteAfter.click();
+  await expect(muteAfter).toHaveAttribute("aria-pressed", "false");
+});
