@@ -53,18 +53,22 @@ const SPRITES: Record<Shape, string[]> = {
     "  121",
     "111 111",
   ],
+  // 13×13, mirror-symmetric about the centre pixel (6, 6): four arms of
+  // equal length and width, a clear gap, and a single dot on the hotspot.
   cross: [
-    "    121",
-    "    121",
-    "    121",
-    "    121",
-    "1111 1111",
-    "2222 2222",
-    "1111 1111",
-    "    121",
-    "    121",
-    "    121",
-    "    121",
+    "     111",
+    "     121",
+    "     121",
+    "     121",
+    "",
+    "1111     1111",
+    "1222  2  2221",
+    "1111     1111",
+    "",
+    "     121",
+    "     121",
+    "     121",
+    "     111",
   ],
 };
 
@@ -73,7 +77,7 @@ const HOT: Record<Shape, [number, number]> = {
   arrow: [0, 0],
   hand: [4, 0],
   text: [3, 5],
-  cross: [4, 5],
+  cross: [6, 6],
 };
 
 const PX = 2; // CSS px per sprite pixel
