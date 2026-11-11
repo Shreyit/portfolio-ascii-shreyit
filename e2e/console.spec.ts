@@ -18,6 +18,8 @@ test("the console plays with buttons and the keyboard", async ({ page }) => {
     "data-console-ready",
     "true",
   );
+  // Reaching for the console stops its idle float.
+  await section.locator(".console").hover();
   const screen = section.locator(".console-screen");
   await expect(screen).toContainText("Programming Languages");
 

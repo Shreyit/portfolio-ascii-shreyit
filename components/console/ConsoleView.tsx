@@ -162,7 +162,7 @@ export function ConsoleView(props: ConsoleViewProps) {
       </div>
 
       <div className="console-rack">
-        <p className="sql-label">cartridges · {props.carts.length}</p>
+        <p className="sql-label">the shelf · {props.carts.length} cartridges</p>
         <ul aria-label="Skill cartridges">
           {props.carts.map((c, i) => (
             <li key={c.title}>

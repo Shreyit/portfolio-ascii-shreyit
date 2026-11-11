@@ -87,6 +87,10 @@ export function MapView(props: MapViewProps) {
         <div className="map-card" aria-live="polite">
           {current ? (
             <>
+              <p className="map-card-coords" aria-hidden="true">
+                {current.lat.toFixed(2)}°N · {current.lon.toFixed(2)}°E ·{" "}
+                {current.name.toLowerCase()}
+              </p>
               <p className="map-card-title">{current.title}</p>
               <p className="map-card-detail">{current.detail}</p>
               {current.period ? (

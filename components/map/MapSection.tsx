@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import { AsciiGrid } from "@/components/ascii/engine/grid";
 import { formatPeriod } from "@/components/ActivityList";
-import { LabPanel } from "@/components/LabPanel";
 import { education, experience, profile, research } from "@/content";
 import { MAP_LABEL, MAP_MIN_FONT_PX } from "./constants";
 import { MAP_COLS, MAP_ROWS } from "./geo";
@@ -107,17 +106,33 @@ export function MapSection() {
   } as CSSProperties;
 
   return (
-    <LabPanel
-      id={`${ID}-heading`}
-      title="Where I've lived & worked"
-      command="~/maps/journey.shp"
-      intro={
-        <p className="lab-intro">
-          A flow map drawn from state boundary shapefiles: home, study,
-          fieldwork and work, with each journey travelling out from Mumbai.
-        </p>
-      }
+    <section
+      className="map-sheet"
+      aria-labelledby={`${ID}-heading`}
+      data-reveal
     >
+      {/* Printed-map furniture: crop marks, sheet number, postmark. */}
+      <span className="map-crop map-crop--tl" aria-hidden="true" />
+      <span className="map-crop map-crop--tr" aria-hidden="true" />
+      <span className="map-crop map-crop--bl" aria-hidden="true" />
+      <span className="map-crop map-crop--br" aria-hidden="true" />
+      <header className="map-sheet-head">
+        <div>
+          <p className="map-sheet-kicker">
+            sheet 01 · survey of one · scale 1 : too many km
+          </p>
+          <h2 id={`${ID}-heading`}>Where I&apos;ve lived &amp; worked</h2>
+          <p className="map-sheet-intro">
+            A flow map drawn from state boundary shapefiles: home, study,
+            fieldwork and work, each journey travelling out from Mumbai.
+          </p>
+        </div>
+        <p className="map-stamp" aria-hidden="true">
+          <span>patna</span>
+          <span className="map-stamp-mid">✦ in transit ✦</span>
+          <span>mumbai</span>
+        </p>
+      </header>
       <MapIsland stops={stops}>
         <MapView
           stops={stops}
@@ -140,6 +155,6 @@ export function MapSection() {
         <a href="https://github.com/datameet/maps">DataMeet India</a> (CC BY
         4.0), simplified.
       </p>
-    </LabPanel>
+    </section>
   );
 }
