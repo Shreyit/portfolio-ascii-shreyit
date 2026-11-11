@@ -6,6 +6,7 @@ const SECTIONS = [
   { id: "sql-heading", label: "sql" },
   { id: "ml-heading", label: "ml" },
   { id: "infra-heading", label: "infra" },
+  { id: "skills-heading", label: "skills" },
   { id: "projects-heading", label: "projects" },
   { id: "contact", label: "contact" },
 ] as const;

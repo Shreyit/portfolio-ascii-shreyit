@@ -2091,3 +2091,467 @@ body {
 [data-fx="low"] .ambient-field {
   display: none;
 }
+
+/* Skill console ----------------------------------------------------------- */
+
+.console {
+  display: grid;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+  justify-items: center;
+}
+
+@media (min-width: 60rem) {
+  .console {
+    grid-template-columns: 22rem minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+  }
+}
+
+/* The handheld: chunky plastic, rounded, bottom-right corner extra round. */
+.console-body {
+  --shell: #2a2340;
+  --shell-hi: #3a3158;
+  --shell-lo: #17121f;
+  position: relative;
+  width: min(100%, 22rem);
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  border-radius: 1.25rem 1.25rem 4.5rem 1.25rem;
+  background: linear-gradient(
+    160deg,
+    var(--shell-hi),
+    var(--shell) 45%,
+    var(--shell-lo)
+  );
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.12),
+    inset 0 -6px 0 rgb(0 0 0 / 0.35),
+    0 30px 60px rgb(0 0 0 / 0.6),
+    0 0 0 1px rgb(0 0 0 / 0.5);
+  outline: none;
+  user-select: none;
+}
+
+.console-body:focus-visible {
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.12),
+    inset 0 -6px 0 rgb(0 0 0 / 0.35),
+    0 30px 60px rgb(0 0 0 / 0.6),
+    0 0 0 3px var(--accent);
+}
+
+.console-bezel {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-radius: 0.6rem 0.6rem 2rem 0.6rem;
+  background: #0f0c16;
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.8);
+}
+
+.console-bezel-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: color-mix(in srgb, var(--fg) 45%, transparent);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.console-led {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--spectrum-4);
+  box-shadow: 0 0 8px var(--spectrum-4);
+  animation: console-led 2.4s ease-in-out infinite;
+}
+
+/* The LCD: tinted, with scanlines and a soft inner glow. */
+.console-screen {
+  position: relative;
+  aspect-ratio: 10 / 9;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    color-mix(in srgb, var(--spectrum-1) 30%, #120d1d),
+    #0a0710
+  );
+  font-family: var(--font-pixel), var(--font-mono);
+  color: color-mix(in srgb, var(--accent) 85%, white);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.console-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.22) 0 1px,
+    transparent 1px 3px
+  );
+  box-shadow: inset 0 0 24px rgb(0 0 0 / 0.7);
+}
+
+.console-screen-inner {
+  height: 100%;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  animation: console-insert 0.45s steps(6) both;
+}
+
+.console-hud {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.console-cart-title {
+  margin: var(--space-1) 0 var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--spectrum-5);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--spectrum-5) 50%, transparent);
+}
+
+.console-list,
+.console-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.console-list li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.console-list li[aria-current="true"] {
+  color: #fff;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  text-shadow: 0 0 8px var(--accent);
+}
+
+.console-list li[aria-current="true"] span {
+  animation: boot-blink 0.9s steps(2) infinite;
+}
+
+.console-card-name {
+  color: #fff;
+  font-size: 1rem;
+  text-shadow: 0 0 10px var(--accent);
+}
+
+.console-card-label {
+  margin-top: var(--space-2);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.console-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.console-hint {
+  margin-top: auto;
+  font-size: 0.6rem;
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.console-brand {
+  margin: var(--space-3) 0 var(--space-6) var(--space-1);
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: color-mix(in srgb, var(--fg) 75%, transparent);
+  letter-spacing: 0.02em;
+}
+
+.console-brand span {
+  margin-left: 0.3em;
+  font-size: 0.7em;
+  color: var(--spectrum-4);
+}
+
+.console-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* D-pad: a plus of five cells. */
+.console-dpad {
+  display: grid;
+  grid-template: repeat(3, 1.9rem) / repeat(3, 1.9rem);
+}
+
+.console-dpad button,
+.dpad-center {
+  background: #15111d;
+  border: 0;
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.08),
+    0 3px 0 rgb(0 0 0 / 0.55);
+  cursor: pointer;
+}
+
+.dpad-up {
+  grid-area: 1 / 2;
+  border-radius: 0.3rem 0.3rem 0 0;
+}
+.dpad-left {
+  grid-area: 2 / 1;
+  border-radius: 0.3rem 0 0 0.3rem;
+}
+.dpad-center {
+  grid-area: 2 / 2;
+}
+.dpad-right {
+  grid-area: 2 / 3;
+  border-radius: 0 0.3rem 0.3rem 0;
+}
+.dpad-down {
+  grid-area: 3 / 2;
+  border-radius: 0 0 0.3rem 0.3rem;
+}
+
+.console-ab {
+  display: flex;
+  gap: var(--space-4);
+  transform: rotate(-22deg);
+}
+
+.console-ab > span {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: 0.7rem;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+}
+
+.console-ab-b {
+  margin-top: var(--space-6);
+}
+
+.console-round {
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    color-mix(in srgb, var(--spectrum-3) 80%, white),
+    var(--spectrum-2) 60%,
+    color-mix(in srgb, var(--spectrum-1) 70%, black)
+  );
+  box-shadow:
+    0 4px 0 rgb(0 0 0 / 0.55),
+    0 0 18px color-mix(in srgb, var(--spectrum-2) 35%, transparent);
+  cursor: pointer;
+}
+
+.console-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-left: var(--space-8);
+}
+
+.console-pill-wrap {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  transform: rotate(-22deg);
+}
+
+.console-pill {
+  width: 2.6rem;
+  height: 0.65rem;
+  border: 0;
+  border-radius: 999px;
+  background: #15111d;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.55);
+  cursor: pointer;
+}
+
+/* Speaker: slanted slots in the round corner. */
+.console-grille {
+  margin-left: auto;
+  width: 3.2rem;
+  height: 2.2rem;
+  background: repeating-linear-gradient(
+    -60deg,
+    transparent 0 0.35rem,
+    rgb(0 0 0 / 0.55) 0.35rem 0.55rem
+  );
+  border-radius: 0.4rem;
+}
+
+/* Every control presses in. */
+.console-body button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
+  filter: brightness(1.2);
+}
+
+.console-body button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.console-body button:disabled {
+  cursor: default;
+}
+
+/* Cartridge rack. */
+.console-rack {
+  width: 100%;
+  min-width: 0;
+}
+
+.console-rack ul {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-3);
+}
+
+.cart {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  text-align: left;
+  font: inherit;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem 0.5rem 0.25rem 0.25rem;
+  background: linear-gradient(170deg, #241d35, #15111d);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 6px 14px rgb(0 0 0 / 0.4);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.cart-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 40%;
+  height: 0.35rem;
+  transform: translateX(-50%);
+  border-radius: 0 0 0.3rem 0.3rem;
+  background: rgb(0 0 0 / 0.45);
+}
+
+.cart-no {
+  font-family: var(--font-pixel), var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.cart-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.cart-count {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.cart:hover:not(:disabled),
+.cart:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.cart[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: linear-gradient(
+    170deg,
+    color-mix(in srgb, var(--accent) 28%, #241d35),
+    #15111d
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 0 22px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.cart[aria-pressed="true"] .cart-no::after {
+  content: " · inserted";
+  color: var(--accent);
+}
+
+.cart:disabled {
+  cursor: default;
+}
+
+@keyframes console-insert {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    filter: brightness(2.5);
+  }
+  60% {
+    opacity: 1;
+    filter: brightness(1.6);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    filter: brightness(1);
+  }
+}
+
+@keyframes console-led {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .console-screen-inner,
+  .console-led,
+  .console-list li[aria-current="true"] span {
+    animation: none;
+  }
+  .cart {
+    transition: none;
+  }
+}
+
+.console-more {
+  height: 0.9em;
+  font-size: 0.55rem;
+  line-height: 0.9em;
+  text-align: center;
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
+}

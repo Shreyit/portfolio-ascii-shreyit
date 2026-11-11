@@ -31,7 +31,15 @@ test("static schema is server-rendered without JavaScript", async ({
 
 test("preset queries run against real SQLite", async ({ page }) => {
   const section = await openPlayground(page);
-  await section.getByRole("button", { name: "fieldwork samples" }).click();
+  // Under parallel load the click can land before the island has swapped
+  // in; retry until the preset is actually in the editor.
+  const editor = page.getByRole("textbox", { name: "SQL query" });
+  await expect(async () => {
+    await section.getByRole("button", { name: "fieldwork samples" }).click();
+    await expect(editor).toHaveValue(/FROM samples/, {
+      timeout: 1000,
+    });
+  }).toPass({ timeout: 15000 });
   // Choosing a preset only loads it; the Run button invites the click.
   const run = section.getByRole("button", { name: /^run/ });
   await expect(run).toHaveAttribute("data-pending", "true");

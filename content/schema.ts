@@ -136,13 +136,15 @@ export type ResearchEntry = z.infer<typeof researchEntrySchema>;
 
 export const skillSchema = z.object({
   name: z.string().min(1),
+  // The resume's skill groups, in its order.
   category: z.enum([
-    "Languages",
-    "AI & LLMs",
-    "Backend & Web",
-    "Databases & Cloud",
-    "Data Science & Visualisation",
-    "Tools & Research",
+    "Programming Languages",
+    "AI & LLM Engineering",
+    "Data Science & Machine Learning",
+    "Databases & Data Engineering",
+    "Cloud & DevOps",
+    "Analytics & Research Tools",
+    "Backend Development",
   ]),
   experience: ExperienceKey.optional(),
 });

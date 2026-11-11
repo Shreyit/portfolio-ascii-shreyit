@@ -6,6 +6,7 @@ import { PortraitArt } from "@/components/hero/PortraitArt";
 import { InfraSection } from "@/components/infra/InfraSection";
 import { MapSection } from "@/components/map/MapSection";
 import { MlSection } from "@/components/ml/MlSection";
+import { SkillsSection } from "@/components/console/SkillsSection";
 import { ResearchSection } from "@/components/research/ResearchSection";
 import { SqlSection } from "@/components/sql/SqlSection";
 import { Terminal } from "@/components/terminal/Terminal";
@@ -71,6 +72,8 @@ export default function Home() {
       <MlSection />
 
       <InfraSection />
+
+      <SkillsSection />
 
       <section className="content-section" aria-labelledby="projects-heading">
         <h2 id="projects-heading">Projects</h2>
