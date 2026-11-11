@@ -92,7 +92,9 @@ test("a runaway query is cancelled and the page stays responsive", async ({
     page,
     "WITH RECURSIVE r(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM r) SELECT COUNT(*) FROM r;",
   );
-  // The main thread is free while the worker spins.
+  // The main thread is free while the worker spins: timer callbacks keep
+  // running. (Counting animation frames instead measures the compositor,
+  // which stalls under parallel test load regardless of the page.)
   const ticks = await page.evaluate(
     () =>
       new Promise<number>((resolve) => {
@@ -100,15 +102,14 @@ test("a runaway query is cancelled and the page stays responsive", async ({
         const start = performance.now();
         const tick = () => {
           n += 1;
-          if (performance.now() - start < 1000) requestAnimationFrame(tick);
+          if (performance.now() - start < 1000) setTimeout(tick, 4);
           else resolve(n);
         };
-        requestAnimationFrame(tick);
+        setTimeout(tick, 4);
       }),
   );
-  // A blocked main thread gives ~0 frames. Headless CI renders the glass
-  // blur on the CPU, so a busy-but-free thread can dip to ~20 fps here.
-  expect(ticks).toBeGreaterThan(10);
+  // A blocked thread manages ~0; a free one well over 100.
+  expect(ticks).toBeGreaterThan(50);
   await expect(section.getByRole("alert")).toContainText("cancelled", {
     timeout: 10000,
   });
@@ -116,4 +117,11 @@ test("a runaway query is cancelled and the page stays responsive", async ({
   await expect(section.getByRole("status")).toContainText("1 row", {
     timeout: 15000,
   });
+});
+
+test("the SQLite engine is served as real WebAssembly", async ({ request }) => {
+  const res = await request.get("/vendor/sql-wasm.wasm");
+  expect(res.status()).toBe(200);
+  const head = (await res.body()).subarray(0, 4);
+  expect([...head]).toEqual([0x00, 0x61, 0x73, 0x6d]); // "\0asm"
 });
