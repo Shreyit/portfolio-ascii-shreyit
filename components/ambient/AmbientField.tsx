@@ -10,6 +10,8 @@ import { drawField } from "./field";
 // Target cell size in CSS px (the font follows from it).
 const CELL_W = 7;
 const CELL_H = 15;
+/** Overall brightness of the backdrop. */
+const INTENSITY = 0.9;
 
 /**
  * Full-viewport ASCII backdrop behind the page. Fixed and non-interactive
@@ -80,9 +82,6 @@ export default function AmbientField() {
       fps: 16,
       update(timeMs, dtMs) {
         if (!grid || !renderer) return;
-        // Hold the backdrop still while scrolling: fewer pixels change
-        // under the moving panels, so scrolling stays smooth.
-        if (document.documentElement.dataset.scrolling) return;
         const k = Math.min(1, dtMs / 220);
         fade += ((target.active ? 1 : 0) - fade) * k;
         pointer.x += (target.x - pointer.x) * (pointer.active ? k : 1);
@@ -90,7 +89,6 @@ export default function AmbientField() {
         pointer.active = target.active;
 
         const y = window.scrollY;
-        const vh = window.innerHeight;
         if (timeMs - lastScan > 1500) {
           lastScan = timeMs;
           // Focal art (name, portrait) in page coordinates, read here
@@ -110,13 +108,11 @@ export default function AmbientField() {
           }
         }
 
-        // Strong at the top, a little calmer further down.
-        const top = Math.min(1, Math.max(0, y / vh - 0.2));
-        const intensity = 1 - 0.3 * top;
-
+        // A fixed backdrop: nothing here depends on how far the page is
+        // scrolled (only the shades, which track the art), so it never
+        // jumps or changes tone while scrolling.
         drawField(grid, timeMs / 1000, pointer, fade, {
-          intensity,
-          scroll: y / CELL_H,
+          intensity: INTENSITY,
           shade: shades.map((sh) => ({ ...sh, y: sh.y - y / CELL_H })),
         });
         renderer.render();

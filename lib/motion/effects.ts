@@ -67,22 +67,6 @@ export async function startEffects(): Promise<() => void> {
     }
   });
 
-  // Flag scrolling so the ambient field holds still under the moving
-  // panels; cleared when scrolling settles.
-  const root = document.documentElement;
-  let settle = 0;
-  const onScroll = () => {
-    if (!root.dataset.scrolling) root.dataset.scrolling = "1";
-    window.clearTimeout(settle);
-    settle = window.setTimeout(() => delete root.dataset.scrolling, 160);
-  };
-  window.addEventListener("scroll", onScroll, { passive: true });
-  cleanups.push(() => {
-    window.removeEventListener("scroll", onScroll);
-    window.clearTimeout(settle);
-    delete root.dataset.scrolling;
-  });
-
   // Nav links scramble on hover/focus.
   const onNav = (event: Event) => {
     const link = (event.target as Element).closest<HTMLElement>(

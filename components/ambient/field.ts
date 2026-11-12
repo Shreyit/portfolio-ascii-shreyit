@@ -38,8 +38,6 @@ const smooth = (e0: number, e1: number, v: number) => {
 export interface FieldOptions {
   /** Overall brightness 0..1. */
   intensity: number;
-  /** Rows scrolled, for a slow parallax drift. */
-  scroll: number;
   /**
    * Soft Gaussian shadows (centre and radii in cells) that darken the
    * field behind focal elements, e.g. the hero name. No edges: it falls
@@ -60,7 +58,7 @@ export function drawField(
   t: number,
   pointer: PointerInput,
   fade: number,
-  options: FieldOptions = { intensity: 1, scroll: 0 },
+  options: FieldOptions = { intensity: 1 },
 ): void {
   const { cols, rows } = grid;
   const flicker = Math.floor(t * 0.7);
@@ -71,7 +69,6 @@ export function drawField(
   }
   const swell2 = SWELL_RADIUS * SWELL_RADIUS;
   for (let y = 0; y < rows; y += 1) {
-    const fy = y + options.scroll * 0.35;
     for (let x = 0; x < cols; x += 1) {
       if (x % 2) {
         grid.set(x, y, " ", 3);
@@ -79,7 +76,7 @@ export function drawField(
       }
       // Large, slow, warped noise: soft clouds rather than spots.
       const nx = x * 0.5;
-      const ny = fy * 0.55;
+      const ny = y * 0.55;
       const wx = noise(nx * 0.02 + t * 0.02, ny * 0.04) * 2.2;
       const wy = noise(nx * 0.02 - 7.3, ny * 0.04 + t * 0.015) * 2.2;
       const n =

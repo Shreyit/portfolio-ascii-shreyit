@@ -40,7 +40,7 @@ describe("ambient field", () => {
   it("brightens around the pointer", () => {
     const off = new AsciiGrid(120, 40);
     const on = new AsciiGrid(120, 40);
-    const dim = { intensity: 0.4, scroll: 0 };
+    const dim = { intensity: 0.4 };
     drawField(off, 4, { x: 30, y: 20, active: false }, 0, dim);
     drawField(on, 4, { x: 30, y: 20, active: true }, 1, dim);
     const r = SWELL_RADIUS * 0.25;
@@ -55,8 +55,8 @@ describe("ambient field", () => {
     const full = new AsciiGrid(120, 40);
     const dim = new AsciiGrid(120, 40);
     const p = { x: 0, y: 0, active: false };
-    drawField(full, 5, p, 0, { intensity: 1, scroll: 0 });
-    drawField(dim, 5, p, 0, { intensity: 0.4, scroll: 0 });
+    drawField(full, 5, p, 0, { intensity: 1 });
+    drawField(dim, 5, p, 0, { intensity: 0.4 });
     expect(brightness(dim, 60, 20, 200)).toBeLessThan(
       brightness(full, 60, 20, 200),
     );
