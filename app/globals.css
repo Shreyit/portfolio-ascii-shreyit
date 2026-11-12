@@ -1569,7 +1569,7 @@ main h2 {
   font: inherit;
   font-size: var(--text-sm);
   color: var(--fg);
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  background: var(--acrylic-tint);
   border: 1px solid color-mix(in srgb, var(--kind) 22%, var(--border));
   border-radius: 999px;
   padding: var(--space-2) var(--space-4);
@@ -1666,13 +1666,17 @@ main h2 {
    scrolling stutter, and dropping it mid-scroll made the panels pop. This
    looks the same at rest, while scrolling and on every effects tier. */
 :root {
-  --acrylic-tint: color-mix(in srgb, var(--surface) 84%, transparent);
+  --acrylic-tint: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--bg) 65%, var(--surface)) 88%,
+    transparent
+  );
   --acrylic-sheen: linear-gradient(
     155deg,
-    rgb(255 255 255 / 0.05),
+    rgb(255 255 255 / 0.028),
     transparent 35%
   );
-  --acrylic-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --acrylic-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .glass,

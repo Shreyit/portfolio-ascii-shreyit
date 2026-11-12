@@ -37,7 +37,7 @@
   border: 1px solid
     color-mix(in srgb, var(--border) 70%, rgb(255 255 255 / 0.14));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  background: var(--acrylic-tint);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
   transition:
     border-color var(--duration-fast) var(--ease-out),
