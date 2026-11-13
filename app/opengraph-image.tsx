@@ -1,12 +1,13 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import portrait from "@/content/generated/portrait.json";
+import portrait from "@/content/generated/og-portrait.json";
 import nameMask from "@/content/generated/name-mask.json";
 
-// The link preview (LinkedIn, Slack, X…): the hero as a still. The braille
-// portrait on the left, the name in the same glyph mask as the site, a
-// dotted spectrum field behind. Rendered once at build time.
+// The link preview (LinkedIn, Slack, X…): the hero as a still. The name in
+// the same glyph mask as the site on the left, a dotted portrait on the
+// right (cropped at the bottom and fading out), a spectrum field behind.
+// Rendered once at build time.
 
 export const alt =
   "Shreyit Sinha — interactive ASCII portfolio: terminal, SQL playground, ML lab and fieldwork map";
@@ -98,8 +99,10 @@ const add = (
   dots.set(fill, list);
 };
 
-// Text column: everything right of the portrait.
-const TEXT_X = 560;
+// Text column on the left, portrait box on the right.
+const TEXT_X = 64;
+const PORTRAIT_W = 500;
+const PORTRAIT_X = W - PORTRAIT_W - 6;
 
 function field(): string {
   const dots = new Map<string, string[]>();
@@ -112,7 +115,7 @@ function field(): string {
         noise(nx * 0.045 + noise(nx * 0.02, ny * 0.04) * 2, ny * 0.09) * 0.8 +
         noise(nx * 0.12, ny * 0.22) * 0.2;
       // Quiet behind the name and the portrait's face, like the site.
-      const dx = (x - (TEXT_X + 300)) / 380;
+      const dx = (x - (TEXT_X + 290)) / 380;
       const dy = (y - 300) / 220;
       const quiet = 1 - 0.75 * Math.exp(-(dx * dx + dy * dy));
       let level = Math.max(0, cloud - 0.42) * 1.6 * quiet;
@@ -125,42 +128,60 @@ function field(): string {
   return svg(paths(dots));
 }
 
-/** Braille dots → rects, lavender like the site's portrait, fading out at the bottom. */
-function portraitArt(width: number, height: number): string {
+// 2×2 ordered-dither thresholds: each character cell becomes two stacked
+// dots, roughly square at this size, so they stay crisp instead of smearing.
+const DITHER = [
+  [0.12, 0.62],
+  [0.88, 0.38],
+];
+
+/**
+ * The portrait as dots, lit like the photo (face, shirt and
+ * highlights bright, hair and shadows dark), contrast-stretched. The brightest tones are capped
+ * so the white shirt dithers instead of reading as a solid block. Lavender
+ * to pink down the figure, fading out at the bottom.
+ */
+function portraitArt(width: number): { src: string; height: number } {
   const dots = new Map<string, string[]>();
-  const cols = portrait.cols * 2;
-  const rows = portrait.rows * 4;
-  const px = width / cols;
-  const py = height / rows;
-  const BIT = [
-    [0x01, 0x02, 0x04, 0x40],
-    [0x08, 0x10, 0x20, 0x80],
-  ];
-  portrait.lines.forEach((line, cy) => {
-    [...line].forEach((ch, cx) => {
-      const bits = ch.codePointAt(0)! - 0x2800;
-      if (bits <= 0) return;
-      for (let sx = 0; sx < 2; sx += 1) {
-        for (let sy = 0; sy < 4; sy += 1) {
-          if (!(bits & BIT[sx]![sy]!)) continue;
-          const row = cy * 4 + sy;
-          const fade = Math.min(1, ((rows - row) / rows) * 4.5);
-          const hue = Math.round((0.3 + (row / rows) * 0.35) * 20) / 20;
-          const level = Math.round(0.95 * fade * 10) / 10;
-          if (level <= 0) continue;
-          add(
-            dots,
-            spectrum(hue, level),
-            (cx * 2 + sx) * px,
-            row * py,
-            px * 0.72,
-            py * 0.72,
-          );
-        }
+  // Half plain brightness, half histogram-equalised: stretches the narrow
+  // band of skin tones so the glasses, beard and ear read.
+  const counts = new Array<number>(10).fill(0);
+  for (const line of portrait.lines)
+    for (const d of line) if (d !== " ") counts[Number(d)]! += 1;
+  const total = counts.reduce((a, b) => a + b, 0);
+  let run = 0;
+  const cdf = counts.map((c) => (run += c) / total);
+  const tone = (d: number) => 0.5 * (d / 9) + 0.5 * cdf[d]!;
+  const cw = width / portrait.cols;
+  const ch = cw * 2;
+  const py = ch / 2;
+  const height = Math.min(H + 40, Math.ceil(portrait.rows * ch));
+  portrait.lines.forEach((line, y) => {
+    const t = y / portrait.rows;
+    // Full strength down to 55%, then a smooth fade to nothing.
+    const fade = 1 - Math.min(1, Math.max(0, (t - 0.55) / 0.45)) ** 1.6;
+    if (fade <= 0.02) return;
+    const hue = Math.round((0.3 + t * 0.35) * 20) / 20;
+    [...line].forEach((d, x) => {
+      if (d === " ") return;
+      const ink = Math.max(0.1, Math.min(0.82, tone(Number(d))));
+      const level = Math.round((0.3 + ink * 0.7) * fade * 12) / 12;
+      if (level <= 0) return;
+      const fill = spectrum(hue, level);
+      for (let sy = 0; sy < 2; sy += 1) {
+        if (ink <= DITHER[(y * 2 + sy) % 2]![x % 2]!) continue;
+        add(
+          dots,
+          fill,
+          x * cw + cw * 0.12,
+          y * ch + sy * py + py * 0.12,
+          +(cw * 0.76).toFixed(2),
+          +(py * 0.76).toFixed(2),
+        );
       }
     });
   });
-  return svg(paths(dots), width, height);
+  return { src: svg(paths(dots), width, height), height };
 }
 
 /** The hero name mask: one block per cell, a spectrum sweep across, brighter where denser. */
@@ -194,11 +215,8 @@ export default async function OpengraphImage() {
     readFile(join(process.cwd(), "assets/og/JetBrainsMono-Medium.ttf")),
     readFile(join(process.cwd(), "assets/og/PixelifySans.ttf")),
   ]);
-  const name = nameArt(580);
-  const portraitW = 500;
-  const portraitH = Math.round(
-    (portraitW * (portrait.rows * 4)) / (portrait.cols * 2),
-  );
+  const name = nameArt(560);
+  const art = portraitArt(PORTRAIT_W);
 
   return new ImageResponse(
     <div
@@ -220,11 +238,11 @@ export default async function OpengraphImage() {
         style={{ position: "absolute", top: 0, left: 0 }}
       />
       <img
-        src={portraitArt(portraitW, portraitH)}
-        width={portraitW}
-        height={portraitH}
+        src={art.src}
+        width={PORTRAIT_W}
+        height={art.height}
         alt=""
-        style={{ position: "absolute", left: 40, top: 30 }}
+        style={{ position: "absolute", left: PORTRAIT_X, top: 18 }}
       />
       <div
         style={{
@@ -232,7 +250,7 @@ export default async function OpengraphImage() {
           left: TEXT_X,
           top: 0,
           bottom: 0,
-          right: 50,
+          width: 600,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -250,7 +268,7 @@ export default async function OpengraphImage() {
         </div>
         <img
           src={name.src}
-          width={580}
+          width={560}
           height={name.height}
           alt=""
           style={{ marginTop: 22 }}
@@ -289,7 +307,7 @@ export default async function OpengraphImage() {
       <div
         style={{
           position: "absolute",
-          right: 50,
+          left: TEXT_X,
           bottom: 28,
           display: "flex",
           fontSize: 17,
