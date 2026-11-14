@@ -1,13 +1,12 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import portrait from "@/content/generated/og-portrait.json";
 import nameMask from "@/content/generated/name-mask.json";
 
 // The link preview (LinkedIn, Slack, X…): the hero as a still. The name in
-// the same glyph mask as the site on the right, a dotted portrait on the
-// left (cropped at the bottom and fading out), a spectrum field behind —
-// the same arrangement as the homepage hero.
+// the same glyph mask as the site on the right; on the left the skills
+// section's handheld, mid-boot like the site's loading screen; a spectrum
+// field behind.
 // Rendered once at build time.
 
 export const alt =
@@ -100,12 +99,10 @@ const add = (
   dots.set(fill, list);
 };
 
-// Portrait box on the left, text column on the right.
-const TEXT_X = 580;
-// Two px per source column: dots sit on a whole-pixel grid, so they never
-// alias into stripes whatever the photo's width.
-const PORTRAIT_W = portrait.cols * 2;
-const PORTRAIT_X = 16;
+// Console on the left, text column on the right.
+const TEXT_X = 540;
+const CONSOLE_X = 92;
+const CONSOLE_W = 352;
 
 function field(): string {
   const dots = new Map<string, string[]>();
@@ -117,7 +114,7 @@ function field(): string {
       const cloud =
         noise(nx * 0.045 + noise(nx * 0.02, ny * 0.04) * 2, ny * 0.09) * 0.8 +
         noise(nx * 0.12, ny * 0.22) * 0.2;
-      // Quiet behind the name and the portrait's face, like the site.
+      // Quiet behind the name, like the site.
       const dx = (x - (TEXT_X + 290)) / 380;
       const dy = (y - 300) / 220;
       const quiet = 1 - 0.75 * Math.exp(-(dx * dx + dy * dy));
@@ -131,79 +128,247 @@ function field(): string {
   return svg(paths(dots));
 }
 
-/** One character per photo-palette index (scripts/build-og-portrait.mjs). */
-const TINT_KEY =
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
-
-// 2×2 ordered-dither thresholds: each character cell becomes two stacked
-// dots, roughly square at this size, so they stay crisp instead of smearing.
-const DITHER = [
-  [0.12, 0.62],
-  [0.88, 0.38],
+// The boot log, as on the site's loading screen (components/boot).
+const BOOT_LOG = [
+  "mounting /dev/curiosity",
+  "brewing chai",
+  "surveying 116 households",
+  "drawing a face in ascii",
+  "teaching sqlite manners",
+  "spinning up ec2 (imaginary)",
 ];
 
-/**
- * The portrait as dots in the photo's own colours. Dot density follows
- * brightness (contrast-stretched; near-white, colourless tones softened so
- * the face leads); the figure fades out towards the bottom.
- */
-function portraitArt(width: number): { src: string; height: number } {
-  const dots = new Map<string, string[]>();
-  // Half plain brightness, half histogram-equalised: stretches the narrow
-  // band of skin tones so the glasses, beard and ear read.
-  const counts = new Array<number>(10).fill(0);
-  for (const line of portrait.lines)
-    for (const d of line) if (d !== " ") counts[Number(d)]! += 1;
-  const total = counts.reduce((a, b) => a + b, 0);
-  let run = 0;
-  const cdf = counts.map((c) => (run += c) / total);
-  const tone = (d: number) => 0.5 * (d / 9) + 0.5 * cdf[d]!;
-  const cw = width / portrait.cols;
-  const ch = cw * 2;
-  const py = ch / 2;
-  const height = Math.min(H + 40, Math.ceil(portrait.rows * ch));
-  // The photo's own colours.
-  const photo = portrait.palette.map((h) => {
-    const c = rgb(h);
-    const l = (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
-    const sat = (Math.max(...c) - Math.min(...c)) / Math.max(Math.max(...c), 1);
-    // Hair lifted to stay visible; the near-white shirt softened to grey.
-    const k =
-      l < 0.3 ? 0.3 / Math.max(l, 0.02) : l > 0.85 && sat < 0.12 ? 0.68 : 1;
-    return c.map((v) => Math.min(255, v * k));
-  });
-  const natural = (tint: string, fade: number) => {
-    const c = photo[TINT_KEY.indexOf(tint)]!;
-    const f = Math.round(fade * 10) / 10;
-    const m = c.map((v, k) => Math.round(BG_RGB[k]! + (v - BG_RGB[k]!) * f));
-    return `rgb(${m[0]},${m[1]},${m[2]})`;
+/** The "shreyit pocket" handheld (app/globals.css .console-*), mid-boot. */
+function Handheld() {
+  const ink = "#15111d";
+  const round = {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    background: `radial-gradient(circle at 35% 30%, #c9a6f2, ${STOPS[2]} 60%, #3a2a6e)`,
+    boxShadow: "0 4px 0 rgba(0,0,0,0.55)",
   };
-  portrait.lines.forEach((line, y) => {
-    const t = y / portrait.rows;
-    // Full strength down to 55%, then a smooth fade to nothing.
-    const fade = 1 - Math.min(1, Math.max(0, (t - 0.55) / 0.45)) ** 1.6;
-    if (fade <= 0.02) return;
-    [...line].forEach((d, x) => {
-      if (d === " ") return;
-      const ink = Math.max(0.18, Math.min(0.85, tone(Number(d))));
-      const fill = natural(portrait.tints[y]![x]!, fade);
-      for (let sy = 0; sy < 2; sy += 1) {
-        if (ink <= DITHER[(y * 2 + sy) % 2]![x % 2]!) continue;
-        add(
-          dots,
-          fill,
-          x * cw + cw * 0.12,
-          y * ch + sy * py + py * 0.12,
-          +(cw * 0.76).toFixed(2),
-          +(py * 0.76).toFixed(2),
-        );
-      }
-    });
-  });
-  return {
-    src: svg(paths(dots), width, height, "geometricPrecision"),
-    height,
-  };
+  const pill = (label: string) => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 4,
+        transform: "rotate(-22deg)",
+        fontSize: 9,
+        letterSpacing: 1.3,
+        color: "rgba(237,237,237,0.55)",
+      }}
+    >
+      <div
+        style={{
+          width: 42,
+          height: 10,
+          borderRadius: 999,
+          background: ink,
+          boxShadow: "0 2px 0 rgba(0,0,0,0.55)",
+        }}
+      />
+      {label}
+    </div>
+  );
+  const dpad = {
+    position: "absolute",
+    width: 30,
+    height: 30,
+    background: ink,
+  } as const;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: CONSOLE_X,
+        top: 30,
+        width: CONSOLE_W,
+        display: "flex",
+        flexDirection: "column",
+        padding: "24px 24px 30px",
+        borderRadius: "20px 20px 72px 20px",
+        background: "linear-gradient(160deg, #3a3158, #2a2340 45%, #17121f)",
+        boxShadow:
+          "inset 0 2px 0 rgba(255,255,255,0.12), 0 30px 60px rgba(0,0,0,0.6)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          padding: "12px 16px 16px",
+          borderRadius: "10px 10px 32px 10px",
+          background: "#0f0c16",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 8,
+            fontSize: 10,
+            letterSpacing: 1.4,
+            color: "rgba(237,237,237,0.45)",
+          }}
+        >
+          <div
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: 999,
+              background: STOPS[4],
+              boxShadow: `0 0 8px ${STOPS[4]}`,
+            }}
+          />
+          PX-7 · BOOTING
+        </div>
+        <div
+          style={{
+            height: 245,
+            display: "flex",
+            flexDirection: "column",
+            padding: 14,
+            borderRadius: 5,
+            background: "radial-gradient(ellipse at 50% 40%, #241a45, #0a0710)",
+            fontSize: 11,
+            lineHeight: 1.6,
+            color: "#e6e0f5",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <div
+              style={{
+                display: "flex",
+                fontFamily: "Pixelify Sans",
+                fontSize: 16,
+                color: ACCENT,
+              }}
+            >
+              shreyit-os
+            </div>
+            <div style={{ display: "flex", fontSize: 9, color: MUTED }}>
+              v2026.11
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", marginTop: 6 }}
+          >
+            {BOOT_LOG.map((line) => (
+              <div key={line} style={{ display: "flex", gap: 7 }}>
+                <span style={{ color: STOPS[5] }}>[ok]</span>
+                {line}
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 7 }}>
+              <span style={{ color: STOPS[3] }}>[..]</span>
+              calibrating vibes
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              marginTop: "auto",
+              height: 9,
+              border: `1px solid ${spectrum(0.4, 0.5)}`,
+              borderRadius: 2,
+            }}
+          >
+            <div
+              style={{
+                width: "82%",
+                background: `repeating-linear-gradient(90deg, ${ACCENT} 0 6px, transparent 6px 8px)`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 5,
+          margin: "14px 0 18px 4px",
+          fontFamily: "Pixelify Sans",
+          fontSize: 19,
+          color: "rgba(237,237,237,0.75)",
+        }}
+      >
+        shreyit
+        <span style={{ fontSize: 13, color: STOPS[4] }}>pocket</span>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            position: "relative",
+            width: 90,
+            height: 90,
+          }}
+        >
+          <div
+            style={{ ...dpad, left: 30, top: 0, borderRadius: "5px 5px 0 0" }}
+          />
+          <div
+            style={{ ...dpad, left: 0, top: 30, borderRadius: "5px 0 0 5px" }}
+          />
+          <div style={{ ...dpad, left: 30, top: 30 }} />
+          <div
+            style={{ ...dpad, left: 60, top: 30, borderRadius: "0 5px 5px 0" }}
+          />
+          <div
+            style={{ ...dpad, left: 30, top: 60, borderRadius: "0 0 5px 5px" }}
+          />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 16,
+            marginRight: 6,
+            transform: "rotate(-22deg)",
+          }}
+        >
+          <div style={{ ...round, marginTop: 24 }} />
+          <div style={round} />
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginTop: 22,
+          paddingLeft: 32,
+        }}
+      >
+        {pill("SELECT")}
+        {pill("START")}
+        <div style={{ display: "flex", gap: 5, marginLeft: "auto" }}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: 4,
+                height: 34,
+                borderRadius: 2,
+                background: "rgba(0,0,0,0.5)",
+                transform: "rotate(30deg)",
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /** The hero name mask: one block per cell, a spectrum sweep across, brighter where denser. */
@@ -238,7 +403,6 @@ export default async function OpengraphImage() {
     readFile(join(process.cwd(), "assets/og/PixelifySans.ttf")),
   ]);
   const name = nameArt(560);
-  const art = portraitArt(PORTRAIT_W);
 
   return new ImageResponse(
     <div
@@ -259,13 +423,7 @@ export default async function OpengraphImage() {
         alt=""
         style={{ position: "absolute", top: 0, left: 0 }}
       />
-      <img
-        src={art.src}
-        width={PORTRAIT_W}
-        height={art.height}
-        alt=""
-        style={{ position: "absolute", left: PORTRAIT_X, top: 18 }}
-      />
+      <Handheld />
       <div
         style={{
           position: "absolute",

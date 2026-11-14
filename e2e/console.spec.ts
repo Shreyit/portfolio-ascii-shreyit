@@ -31,7 +31,7 @@ test("the console plays with buttons and the keyboard", async ({ page }) => {
   await expect(screen).toContainText("found in");
 
   // Keyboard on the console itself.
-  await page.locator(".console-body").focus();
+  await section.locator(".console-body").focus();
   await page.keyboard.press("Escape");
   await page.keyboard.press("ArrowLeft");
   await expect(screen).toContainText("Programming Languages");

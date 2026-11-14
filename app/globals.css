@@ -1860,17 +1860,48 @@ body {
 }
 
 .boot-inner {
-  width: min(100%, 36rem);
-  font-size: clamp(0.75rem, 2.6vw, 0.95rem);
-  line-height: 1.7;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  width: min(100%, 22rem);
+}
+
+/* The skills section's handheld, decorative, powering on. */
+.boot-console {
+  cursor: inherit;
+  animation: boot-console-in 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@media (min-width: 48rem) and (min-height: 46rem) {
+  .boot-inner {
+    zoom: 1.15;
+  }
+}
+
+.boot-console .console-round,
+.boot-console .console-pill {
+  display: block;
+}
+
+/* The screen flickers on, then the log types across it. */
+.boot-screen {
+  height: 100%;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--fg) 88%, var(--accent));
+  animation: boot-screen-on 0.45s steps(5) 0.15s both;
 }
 
 .boot-title {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
   font-family: var(--font-pixel), var(--font-mono);
-  font-size: 1.6em;
+  font-size: 1.35em;
   color: var(--accent);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .boot-dim,
@@ -1881,8 +1912,7 @@ body {
 }
 
 .boot-hint {
-  margin-top: var(--space-4);
-  font-size: 0.8em;
+  font-size: 0.75rem;
   animation: boot-blink 1.2s steps(2) infinite;
 }
 
@@ -1912,8 +1942,8 @@ body {
 .boot-bar {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
+  gap: var(--space-2);
+  margin-top: auto;
 }
 
 /* Braille spinner. */
@@ -1948,6 +1978,30 @@ body {
 .boot--off {
   pointer-events: none;
   animation: boot-crt 0.7s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+}
+
+@keyframes boot-console-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+}
+
+@keyframes boot-screen-on {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+    filter: brightness(2.2);
+  }
+  60% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+  }
 }
 
 @keyframes boot-type {
@@ -2037,6 +2091,8 @@ body {
     width: 90%;
     animation: none;
   }
+  .boot-console,
+  .boot-screen,
   .boot-spin::before,
   .boot-hint,
   .boot-log li[data-status="wait"] .boot-status {
@@ -2276,8 +2332,7 @@ body {
   grid-template: repeat(3, 1.9rem) / repeat(3, 1.9rem);
 }
 
-.console-dpad button,
-.dpad-center {
+.console-dpad > * {
   background: #15111d;
   border: 0;
   box-shadow:
