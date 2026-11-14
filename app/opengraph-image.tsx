@@ -128,6 +128,10 @@ function field(): string {
   return svg(paths(dots));
 }
 
+/** One character per photo-palette index (scripts/build-og-portrait.mjs). */
+const TINT_KEY =
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+
 // 2×2 ordered-dither thresholds: each character cell becomes two stacked
 // dots, roughly square at this size, so they stay crisp instead of smearing.
 const DITHER = [
@@ -136,10 +140,9 @@ const DITHER = [
 ];
 
 /**
- * The portrait as dots, lit like the photo (face, shirt and
- * highlights bright, hair and shadows dark), contrast-stretched. The brightest tones are capped
- * so the white shirt dithers instead of reading as a solid block. Lavender
- * to pink down the figure, fading out at the bottom.
+ * The portrait as dots in the photo's own colours. Dot density follows
+ * brightness (contrast-stretched, the white shirt held back so the face
+ * leads); the figure fades out towards the bottom.
  */
 function portraitArt(width: number): { src: string; height: number } {
   const dots = new Map<string, string[]>();
@@ -156,20 +159,33 @@ function portraitArt(width: number): { src: string; height: number } {
   const ch = cw * 2;
   const py = ch / 2;
   const height = Math.min(H + 40, Math.ceil(portrait.rows * ch));
+  // The photo's own colours.
+  const photo = portrait.palette.map((h) => {
+    const c = rgb(h);
+    const l = (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255;
+    const sat = (Math.max(...c) - Math.min(...c)) / Math.max(Math.max(...c), 1);
+    // Hair lifted to stay visible; the near-white shirt softened to grey.
+    const k =
+      l < 0.3 ? 0.3 / Math.max(l, 0.02) : l > 0.85 && sat < 0.12 ? 0.68 : 1;
+    return c.map((v) => Math.min(255, v * k));
+  });
+  const natural = (tint: string, fade: number) => {
+    const c = photo[TINT_KEY.indexOf(tint)]!;
+    const f = Math.round(fade * 10) / 10;
+    const m = c.map((v, k) => Math.round(BG_RGB[k]! + (v - BG_RGB[k]!) * f));
+    return `rgb(${m[0]},${m[1]},${m[2]})`;
+  };
   portrait.lines.forEach((line, y) => {
     const t = y / portrait.rows;
     // Full strength down to 55%, then a smooth fade to nothing.
     const fade = 1 - Math.min(1, Math.max(0, (t - 0.55) / 0.45)) ** 1.6;
     if (fade <= 0.02) return;
-    const hue = Math.round((0.3 + t * 0.35) * 20) / 20;
     [...line].forEach((d, x) => {
       if (d === " ") return;
       // Pure white (the shirt) held at a mid tone: the face stays brightest.
       const ink =
         d === "9" ? 0.42 : Math.max(0.18, Math.min(0.8, tone(Number(d))));
-      const level = Math.round((0.3 + ink * 0.7) * fade * 12) / 12;
-      if (level <= 0) return;
-      const fill = spectrum(hue, level);
+      const fill = natural(portrait.tints[y]![x]!, fade);
       for (let sy = 0; sy < 2; sy += 1) {
         if (ink <= DITHER[(y * 2 + sy) % 2]![x % 2]!) continue;
         add(

@@ -36,6 +36,8 @@ interface AsciiCanvasProps {
   className?: string;
   /** Let whatever is behind the figure show through blank cells. */
   transparent?: boolean;
+  /** Extra palette colours from index EXTRA_BASE (keep the array stable). */
+  extraColors?: readonly string[];
 }
 
 const CELL_ASPECT = 0.6; // JetBrains Mono advance = 600/1000 em
@@ -51,6 +53,7 @@ export function AsciiCanvas({
   minFontPx = DEFAULT_MIN_FONT_PX,
   className,
   transparent = false,
+  extraColors,
 }: AsciiCanvasProps) {
   // Static frame is computed with a plain grid — runs on the server and
   // works with no JS at all.
@@ -136,6 +139,7 @@ export function AsciiCanvas({
         fontFamily,
         maxDpr: 2,
         transparent,
+        extraColors,
       });
       void renderer
         .init(canvas.clientWidth, canvas.clientHeight)
@@ -246,7 +250,7 @@ export function AsciiCanvas({
       renderer = null;
       untrackStats();
     };
-  }, [scene, cols, rows, fps, transparent]);
+  }, [scene, cols, rows, fps, transparent, extraColors]);
 
   const style = {
     "--ascii-cols": cols,

@@ -14,6 +14,11 @@ export const HUE_STEPS = 12;
 /** Brightness levels per hue, from barely-there to full colour. */
 export const LEVELS = 14;
 /**
+ * First index after the spectrum: a renderer's `extraColors` (e.g. a
+ * photo's own colours) start here. Indices are a byte, so at most 82.
+ */
+export const EXTRA_BASE = SPECTRUM_BASE + HUE_STEPS * LEVELS;
+/**
  * Brightness of each level (share of the hue mixed into the background).
  * Roughly geometric, so dim regions get many fine steps and glyphs fade
  * into black continuously instead of dropping out at a visible edge.

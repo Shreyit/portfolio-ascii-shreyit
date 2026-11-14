@@ -1317,9 +1317,10 @@ button:disabled {
   cursor: crosshair;
 }
 
-/* Static braille fallback: tint it like the canvas. */
+/* Static braille fallback: a warm skin tone, close to the canvas's
+   natural colours. */
 .portrait-art .ascii-pre {
-  color: color-mix(in srgb, var(--spectrum-2) 85%, var(--fg));
+  color: #e9c2ad;
 }
 
 .hero-art {

@@ -9,6 +9,8 @@ export interface CanvasRendererOptions {
   maxDpr?: number;
   /** Clear cells to transparent instead of painting the page background. */
   transparent?: boolean;
+  /** Colours appended after the theme palette, from index EXTRA_BASE. */
+  extraColors?: readonly string[];
 }
 
 export interface RendererStats {
@@ -29,6 +31,7 @@ export class CanvasRenderer {
   private readonly fontFamily: string;
   private readonly maxDpr: number;
   private readonly transparent: boolean;
+  private readonly extraColors: readonly string[];
   private ctx: CanvasRenderingContext2D | null = null;
   private font: FontMetrics | null = null;
   private layout: CellLayout | null = null;
@@ -57,6 +60,12 @@ export class CanvasRenderer {
     this.fontFamily = options.fontFamily;
     this.maxDpr = options.maxDpr ?? 2;
     this.transparent = options.transparent ?? false;
+    this.extraColors = options.extraColors ?? [];
+  }
+
+  private readPalette(): Palette {
+    const palette = readPalette(document.documentElement);
+    return { ...palette, colors: [...palette.colors, ...this.extraColors] };
   }
 
   /** Measures the font and lays out for the given CSS box. */
@@ -66,7 +75,7 @@ export class CanvasRenderer {
       return;
     }
     this.ctx = this.canvas.getContext("2d", { alpha: this.transparent });
-    this.palette = readPalette(document.documentElement);
+    this.palette = this.readPalette();
     this.unsubscribeTheme = onThemeChange(() => this.refreshPalette());
     this.resize(cssWidth, cssHeight);
   }
@@ -173,7 +182,7 @@ export class CanvasRenderer {
     if (this.destroyed) {
       return;
     }
-    this.palette = readPalette(document.documentElement);
+    this.palette = this.readPalette();
     this.rebuildAtlas();
     this.fullRedraw();
   }

@@ -1,5 +1,5 @@
 import type { AsciiGrid } from "@/components/ascii/engine/grid";
-import { spectrum } from "@/components/ascii/engine/palette";
+import { EXTRA_BASE, spectrum } from "@/components/ascii/engine/palette";
 import type { AsciiScene, PointerInput } from "@/components/ascii/engine/scene";
 import portrait from "@/content/generated/portrait.json";
 
@@ -20,8 +20,14 @@ interface Particle {
   ch: string;
   /** Dots lit in this cell, 0..1. */
   ink: number;
+  /** Index into the photo's own colours, or -1 to use the spectrum. */
+  tint: number;
   seed: number;
 }
+
+/** One character per photo-palette index (scripts/build-portrait-braille.mjs). */
+const TINT_KEY =
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
 
 const CELL_ASPECT = 2;
 const RADIUS = 9; // pointer influence, in columns
@@ -58,7 +64,14 @@ function colourFor(p: Particle, glow: number): number {
  * load it reveals top to bottom.
  */
 export function createPortraitScene(
-  options: { intro?: boolean } = {},
+  options: {
+    intro?: boolean;
+    /**
+     * Natural colour per cell (rows of TINT_KEY characters). The renderer
+     * must carry the matching palette as `extraColors`.
+     */
+    tints?: readonly string[];
+  } = {},
 ): AsciiScene & { burst(): void } {
   const particles: Particle[] = portraitCells().map((c, i) => ({
     hx: c.x,
@@ -69,6 +82,9 @@ export function createPortraitScene(
     vy: 0,
     ch: c.ch,
     ink: popcount(c.ch.codePointAt(0)! - BLANK) / 8,
+    tint: options.tints
+      ? TINT_KEY.indexOf(options.tints[c.y]?.[c.x] ?? " ")
+      : -1,
     seed: (i * 7919) % 97,
   }));
   let burst = false;
@@ -91,7 +107,11 @@ export function createPortraitScene(
         Math.round(p.x),
         Math.round(p.y),
         p.ch,
-        moving ? spectrum(0.85, 0.95) : colourFor(p, glow),
+        p.tint >= 0
+          ? EXTRA_BASE + p.tint
+          : moving
+            ? spectrum(0.85, 0.95)
+            : colourFor(p, glow),
       );
     }
   };
