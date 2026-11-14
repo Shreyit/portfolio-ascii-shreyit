@@ -5,8 +5,9 @@ import portrait from "@/content/generated/og-portrait.json";
 import nameMask from "@/content/generated/name-mask.json";
 
 // The link preview (LinkedIn, Slack, X…): the hero as a still. The name in
-// the same glyph mask as the site on the left, a dotted portrait on the
-// right (cropped at the bottom and fading out), a spectrum field behind.
+// the same glyph mask as the site on the right, a dotted portrait on the
+// left (cropped at the bottom and fading out), a spectrum field behind —
+// the same arrangement as the homepage hero.
 // Rendered once at build time.
 
 export const alt =
@@ -99,12 +100,12 @@ const add = (
   dots.set(fill, list);
 };
 
-// Text column on the left, portrait box on the right.
-const TEXT_X = 64;
+// Portrait box on the left, text column on the right.
+const TEXT_X = 580;
 // Two px per source column: dots sit on a whole-pixel grid, so they never
 // alias into stripes whatever the photo's width.
 const PORTRAIT_W = portrait.cols * 2;
-const PORTRAIT_X = W - PORTRAIT_W - 6;
+const PORTRAIT_X = 16;
 
 function field(): string {
   const dots = new Map<string, string[]>();
