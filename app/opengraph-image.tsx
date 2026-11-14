@@ -74,9 +74,9 @@ function noise(x: number, y: number): number {
   return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
 }
 
-const svg = (body: string, w = W, h = H) =>
+const svg = (body: string, w = W, h = H, rendering = "crispEdges") =>
   `data:image/svg+xml;utf8,${encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges">${body}</svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" shape-rendering="${rendering}">${body}</svg>`,
   )}`;
 
 /** Groups rects by colour into one path each: far smaller than one element per dot. */
@@ -101,7 +101,9 @@ const add = (
 
 // Text column on the left, portrait box on the right.
 const TEXT_X = 64;
-const PORTRAIT_W = 500;
+// Two px per source column: dots sit on a whole-pixel grid, so they never
+// alias into stripes whatever the photo's width.
+const PORTRAIT_W = portrait.cols * 2;
 const PORTRAIT_X = W - PORTRAIT_W - 6;
 
 function field(): string {
@@ -141,8 +143,8 @@ const DITHER = [
 
 /**
  * The portrait as dots in the photo's own colours. Dot density follows
- * brightness (contrast-stretched, the white shirt held back so the face
- * leads); the figure fades out towards the bottom.
+ * brightness (contrast-stretched; near-white, colourless tones softened so
+ * the face leads); the figure fades out towards the bottom.
  */
 function portraitArt(width: number): { src: string; height: number } {
   const dots = new Map<string, string[]>();
@@ -182,9 +184,7 @@ function portraitArt(width: number): { src: string; height: number } {
     if (fade <= 0.02) return;
     [...line].forEach((d, x) => {
       if (d === " ") return;
-      // Pure white (the shirt) held at a mid tone: the face stays brightest.
-      const ink =
-        d === "9" ? 0.42 : Math.max(0.18, Math.min(0.8, tone(Number(d))));
+      const ink = Math.max(0.18, Math.min(0.85, tone(Number(d))));
       const fill = natural(portrait.tints[y]![x]!, fade);
       for (let sy = 0; sy < 2; sy += 1) {
         if (ink <= DITHER[(y * 2 + sy) % 2]![x % 2]!) continue;
@@ -199,7 +199,10 @@ function portraitArt(width: number): { src: string; height: number } {
       }
     });
   });
-  return { src: svg(paths(dots), width, height), height };
+  return {
+    src: svg(paths(dots), width, height, "geometricPrecision"),
+    height,
+  };
 }
 
 /** The hero name mask: one block per cell, a spectrum sweep across, brighter where denser. */

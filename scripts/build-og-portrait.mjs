@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Imports a colour ASCII portrait (the HTML export of an image-to-ASCII
 // converter: one <span style="color:#rrggbb"> per run) into
-// content/generated/og-portrait.json. The background is keyed out by colour:
-// a green screen if the top-left cell is green, otherwise pure white. Each
+// content/generated/og-portrait.json. The background is keyed out by the
+// top-left cell's colour: a green screen (any strong green), or a flat
+// backdrop (colours within a few steps of it, e.g. #121212 black). Each
 // cell keeps its luminance (0-9, " " for background) and its natural colour,
 // reduced to a small palette; the source photo is never committed.
 //   node scripts/build-og-portrait.mjs ~/Downloads/ascii-art.html [keep=0.8]
@@ -25,8 +26,9 @@ const rgbOf = (hex) => {
 const isGreen = ([r, g, b]) => g > 150 && g - Math.max(r, b) > 70;
 const firstHex = /color:#([0-9a-fA-F]{6})/.exec(pre)?.[1] ?? "ffffff";
 const greenScreen = isGreen(rgbOf(firstHex));
+const key = rgbOf(firstHex);
 const isBackground = (rgb) =>
-  greenScreen ? isGreen(rgb) : rgb.every((v) => v === 255);
+  greenScreen ? isGreen(rgb) : rgb.every((v, i) => Math.abs(v - key[i]) <= 8);
 // Brightness comes from the character: the converter colours a whole run by
 // its first character, so trailing spaces (the darkest tone) carry a
 // neighbour's colour. Those cells get a dark hair brown instead.

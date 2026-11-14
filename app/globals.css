@@ -1280,7 +1280,7 @@ button:disabled {
 
 /* Hero ------------------------------------------------------------------- */
 
-/* Name and tagline on the left, the braille portrait in the right corner;
+/* The braille portrait on the left, name and tagline on the right;
    stacked on narrow screens. */
 .hero-top {
   display: grid;
@@ -1290,8 +1290,12 @@ button:disabled {
 
 @media (min-width: 56rem) {
   .hero-top {
-    /* Name and tagline on the left, portrait on the right. */
-    grid-template-columns: minmax(0, 1fr) clamp(15rem, 26vw, 21rem);
+    /* Portrait on the left, name and tagline on the right. */
+    grid-template-columns: clamp(15rem, 26vw, 21rem) minmax(0, 1fr);
+  }
+
+  .hero-top > .portrait-wrap {
+    order: -1;
   }
 }
 

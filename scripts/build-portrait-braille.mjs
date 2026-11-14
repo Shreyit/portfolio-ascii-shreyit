@@ -21,10 +21,10 @@ const rows = Math.round((cols * src.rows) / src.cols);
 const dotsW = cols * 2;
 const dotsH = rows * 4;
 
-// Dot density per source level 0-9 (dark → light). Pure white, in practice
-// the shirt, is held back so the face is the brightest part of the figure;
-// the black hair keeps a sparse texture rather than vanishing.
-const TONE = [0.08, 0.14, 0.2, 0.28, 0.38, 0.5, 0.62, 0.75, 0.88, 0.36];
+// Dot density per source level 0-9 (dark → light): a contrast curve that
+// keeps black hair as a sparse texture rather than letting it vanish.
+// (A white shirt is softened by colour instead; see `lift` below.)
+const TONE = [0.08, 0.14, 0.2, 0.28, 0.38, 0.5, 0.62, 0.75, 0.88, 0.95];
 
 // Target density per dot; NaN outside the figure (never lit, takes no error).
 const grid = new Float32Array(dotsW * dotsH);
