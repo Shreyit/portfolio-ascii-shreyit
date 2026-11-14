@@ -164,7 +164,9 @@ function portraitArt(width: number): { src: string; height: number } {
     const hue = Math.round((0.3 + t * 0.35) * 20) / 20;
     [...line].forEach((d, x) => {
       if (d === " ") return;
-      const ink = Math.max(0.1, Math.min(0.82, tone(Number(d))));
+      // Pure white (the shirt) held at a mid tone: the face stays brightest.
+      const ink =
+        d === "9" ? 0.42 : Math.max(0.18, Math.min(0.8, tone(Number(d))));
       const level = Math.round((0.3 + ink * 0.7) * fade * 12) / 12;
       if (level <= 0) return;
       const fill = spectrum(hue, level);

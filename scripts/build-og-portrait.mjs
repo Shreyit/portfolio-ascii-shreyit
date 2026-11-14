@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Imports a colour ASCII portrait (the HTML export of an image-to-ASCII
-// converter: one <span style="color:#rrggbb"> per run, pure white = removed
-// background) into content/generated/og-portrait.json for the link-preview
-// image. Each cell keeps only its luminance (0-9, " " for background); the
-// source photo is never committed.
+// converter: one <span style="color:#rrggbb"> per run; the darkest cells are
+// bare spaces outside any span) into content/generated/og-portrait.json.
+// The background is keyed out by colour: a green screen if the top-left
+// cell is green, otherwise pure white. Each cell keeps only its luminance
+// (0-9, " " for background); the source photo is never committed.
 //   node scripts/build-og-portrait.mjs ~/Downloads/ascii-art.html [keep=0.8]
 // `keep` is the share of rows kept from the top (crops the bottom).
 import { readFileSync, writeFileSync } from "node:fs";
@@ -15,21 +16,33 @@ const pre = /<pre[^>]*>([\s\S]*)<\/pre>/.exec(html)?.[1];
 if (!pre) throw new Error("no <pre> block found");
 
 const span = /<span style="color:#([0-9a-fA-F]{6})">([^<]*)<\/span>/g;
+const rgbOf = (hex) => {
+  const n = parseInt(hex, 16);
+  return [n >> 16, (n >> 8) & 255, n & 255];
+};
+const isGreen = ([r, g, b]) => g > 150 && g - Math.max(r, b) > 70;
+const firstHex = /color:#([0-9a-fA-F]{6})/.exec(pre)?.[1] ?? "ffffff";
+const greenScreen = isGreen(rgbOf(firstHex));
+const isBackground = (rgb) =>
+  greenScreen ? isGreen(rgb) : rgb.every((v) => v === 255);
+// Brightness comes from the character, not the colour: the converter colours
+// a whole run by its first character, so trailing spaces (the darkest tone)
+// carry a neighbour's colour. The colour is only used to key the background.
+const RAMP = " .:-=+*#%@";
+const decode = (text) => [
+  ...text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"),
+];
+
 let rows = pre
   .split("\n")
   .map((line) => {
     let row = "";
     for (const [, hex, text] of line.matchAll(span)) {
-      const n = parseInt(hex, 16);
-      const r = n >> 16;
-      const g = (n >> 8) & 255;
-      const b = n & 255;
-      const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-      const cell =
-        n === 0xffffff ? " " : String(Math.min(9, Math.round(lum * 9)));
-      // Entities decode to one character each.
-      const chars = [...text.replace(/&[a-z#0-9]+;/gi, "x")].length;
-      row += cell.repeat(chars);
+      const bg = isBackground(rgbOf(hex));
+      for (const ch of decode(text)) {
+        const i = RAMP.indexOf(ch);
+        row += bg ? " " : String(i < 0 ? 5 : i);
+      }
     }
     return row;
   })
