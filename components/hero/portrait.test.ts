@@ -8,7 +8,7 @@ import {
 } from "./portrait";
 
 describe("portrait scene", () => {
-  it("reproduces the imported braille art exactly at rest", () => {
+  it("reproduces the imported ASCII art exactly at rest", () => {
     const grid = new AsciiGrid(PORTRAIT_COLS, PORTRAIT_ROWS);
     createPortraitScene().staticFrame(grid);
     const lines = grid.toPlainText().split("\n");

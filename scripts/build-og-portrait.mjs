@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Imports a colour ASCII portrait (the HTML export of an image-to-ASCII
 // converter: one <span style="color:#rrggbb"> per run) into
-// content/generated/og-portrait.json. The background is keyed out by the
+// content/generated/og-portrait.json for the link preview (the hero uses
+// scripts/build-portrait-ascii.mjs). The background is keyed out by the
 // top-left cell's colour: a green screen (any strong green), or a flat
 // backdrop (colours within a few steps of it, e.g. #121212 black). Each
 // cell keeps its luminance (0-9, " " for background) and its natural colour,
