@@ -1367,10 +1367,32 @@ section[id] {
   position: fixed;
   inset: 0;
   z-index: 0;
-  width: 100vw;
-  height: 100vh;
   pointer-events: none;
+}
+
+.ambient-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   font-family: var(--font-mono);
+}
+
+/* Coloured glow under the glyphs, centred on the eased spotlight. */
+.ambient-haze {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      360px circle at var(--fx, 50%) var(--fy, 40%),
+      color-mix(in srgb, var(--spectrum-2) 11%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      900px circle at var(--fx, 50%) var(--fy, 40%),
+      color-mix(in srgb, var(--spectrum-1) 5%, transparent),
+      transparent 70%
+    );
 }
 
 /* Page content sits above the backdrop; panels are opaque, so the field
