@@ -256,8 +256,3 @@ to the scrollable element.
 The intended deployment target is **Vercel**, but the app must stay **host-portable** —
 no Vercel-only APIs, no static-export-specific constraints. It should remain deployable
 to AWS (e.g. via a Node server or container) without code changes.
-
-## Note
-
-`Shreyit_Sinha_Resume.pdf` in the repo root is source material and is intentionally not
-published or copied into `public/`.
